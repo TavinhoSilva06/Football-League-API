@@ -167,31 +167,44 @@ Entidades JPA **nunca** são serializadas diretamente:
 
 ---
 
-### **Dia 2 — Nível 1, Parte A (~6h)**
+### **Dia 2 — Nível 1, Parte A (~6h)** ✅ 100% CONCLUÍDO
 
 **Objetivo**: Primeiras entidades + CRUD básico para Campeonato e Temporada.
 
 **Checklist**:
-- [ ] Criar enums: `TipoCampeonato`, `FormatoCampeonato`, `StatusTemporada` (package `enum/`)
-- [ ] Entidade `Campeonato`:
-  - Fields: `id`, `nome` (unique, not null), `pais`, `tipo` (enum), `descricao`, `formato` (enum)
-  - 1:N com `Temporada`
-- [ ] Repository `CampeonatoRepository` (extends `JpaRepository`)
-- [ ] DTOs: `CampeonatoRequestDto`, `CampeonatoResponseDto`
-- [ ] Mapper: `CampeonatoMapper` (mão)
-- [ ] Service `CampeonatoService`: 
-  - `findAll()`, `findById(id)`, `create(dto)`, `update(id, dto)`, `delete(id)`
-  - Validações básicas (not null, unique)
-- [ ] Controller `CampeonatoController`:
-  - `GET /campeonatos`, `GET /campeonatos/{id}`, `POST /campeonatos`, `PUT /campeonatos/{id}`, `DELETE /campeonatos/{id}`
-- [ ] Entidade `Temporada`:
-  - Fields: `id`, `campeonato` (M:1), `nome` (e.g. "2026/27"), `dataInicio`, `dataFim`, `status` (enum)
-  - Unique constraint: (campeonato_id, nome)
-  - 1:N com `Participacao` e `Partida`
-- [ ] Repository, DTOs, Mapper, Service, Controller para Temporada (similar a Campeonato)
-  - Endpoints: `GET/POST /campeonatos/{campeonatoId}/temporadas`, `GET/PUT/DELETE /temporadas/{id}`
-- [ ] GlobalExceptionHandler mínimo (404 NotFound, 400 BadRequest/validation, 409 DataIntegrityViolation)
+- [x] Criar enums: `TipoCampeonato`, `FormatoCampeonato`, `StatusTemporada` (package `enum/`)
+- [x] Entidade `Campeonato`:
+  - [x] Fields: `id`, `nome` (unique, not null), `pais`, `tipo` (enum), `descricao`, `formato` (enum)
+  - [x] 1:N com `Temporada`
+- [x] Repository `CampeonatoRepository` (extends `JpaRepository`)
+- [x] DTOs: `CampeonatoRequestDto`, `CampeonatoResponseDto`
+- [x] Mapper: `CampeonatoMapper` (manual)
+- [x] Service `CampeonatoService`: 
+  - [x] `findAll()`, `findById(id)`, `create(dto)`, `update(id, dto)`, `delete(id)`
+  - [x] Validações básicas (@NotBlank, @NotNull)
+- [x] Controller `CampeonatoController`:
+  - [x] `GET /campeonatos`, `GET /campeonatos/{id}`, `POST /campeonatos`, `PUT /campeonatos/{id}`, `DELETE /campeonatos/{id}`
+- [x] Entidade `Temporada`:
+  - [x] Fields: `id`, `campeonato` (M:1), `nome` (e.g. "2026/27"), `dataInicio`, `dataFim`, `status` (enum)
+  - [x] Unique constraint: (campeonato_id, nome)
+  - [x] 1:N com `Participacao` e `Partida`
+- [x] Repository, DTOs, Mapper, Service, Controller para Temporada (similar a Campeonato)
+  - [x] Endpoints: `GET/POST /campeonatos/{campeonatoId}/temporadas`, `GET/PUT/DELETE /temporadas/{id}`
+- [x] GlobalExceptionHandler (404 NotFound, 400 BadRequest/validation, 409 DataIntegrityViolation)
+  - [x] EntityNotFoundException
+  - [x] MethodArgumentNotValidException
+  - [x] DataIntegrityViolationException
 - [ ] Commitar: "feat(campeonato,temporada): level 1 crud"
+
+**Artefatos criados**:
+- 3 Enums (TipoCampeonato, FormatoCampeonato, StatusTemporada)
+- 4 Entidades (Campeonato, Temporada, + stubs: Participacao, Time, Partida)
+- 4 Repositories (Campeonato, Temporada, Participacao, Partida, Time)
+- 4 DTOs (2x Campeonato, 2x Temporada)
+- 2 Mappers (CampeonatoMapper, TemporadaMapper)
+- 2 Services (CampeonatoService, TemporadaService)
+- 2 Controllers (CampeonatoController, TemporadaController)
+- 1 GlobalExceptionHandler + 1 EntityNotFoundException
 
 ---
 
