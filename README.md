@@ -122,22 +122,37 @@ spring-boot-starter-webmvc-test
    - DB: `mydatabase`, User: `myuser`, Password: `secret`
    - Disponível em `localhost:5432` (porta dinâmica)
 
-3. **Compile e rode a aplicação**
+3. **Compile e rode a aplicação com Profile DEV**
    ```bash
-   ./mvnw clean spring-boot:run
+   ./mvnw clean spring-boot:run -Dspring.profiles.active=dev
    ```
-   - Ou, em Windows:
-   ```cmd
-   mvnw.cmd clean spring-boot:run
+   - Ou, em Windows PowerShell:
+   ```powershell
+   ./mvnw.cmd spring-boot:run "-Dspring.profiles.active=dev"
    ```
+   - Ou via IntelliJ: Configurar em **Run** → **Edit Configurations** → Maven → `-Dspring.profiles.active=dev`
 
-4. **Acesse a API**
+4. **Aguarde o DataSeeder popular o banco**
+   - A aplicação cria automaticamente:
+     - 3 campeonatos (Premier League, Série A, Bundesliga)
+     - 3 temporadas
+     - 8 times
+     - 14 jogadores
+     - 8 participações
+
+5. **Acesse a API**
    - Base URL: `http://localhost:8080`
    - Exemplo: `GET http://localhost:8080/campeonatos`
 
-5. **Ver logs**
+6. **Usar Postman para testar (RECOMENDADO)**
+   - Abra Postman e importe: `Football-League-API/docs/postman-collection.json`
+   - Crie um Environment com `base_url = http://localhost:8080`
+   - Todos os 23 endpoints estão organizados e prontos para testar
+
+7. **Ver logs**
    - SQL queries: Ativadas por padrão (`spring.jpa.show-sql=true`)
    - Hibernate logging: DEBUG habilitado em `application.properties`
+   - Procure por "DataSeeder" para confirmar a população de dados
 
 ## 📚 Endpoints Principais
 
@@ -169,10 +184,10 @@ spring-boot-starter-webmvc-test
 - `PUT /jogadores/{id}` — Atualizar
 - `DELETE /jogadores/{id}` — Deletar
 
-### Participações (Time-Temporada)
-- `GET /temporadas/{temporadaId}/participacoes` — Listar
+### Participações (Time-Temporada) ✅ IMPLEMENTADO
+- `GET /temporadas/{temporadaId}/participacoes` — Listar participações de uma temporada
 - `POST /temporadas/{temporadaId}/participacoes` — Adicionar time à temporada
-- `DELETE /participacoes/{id}` — Remover
+- `DELETE /participacoes/{id}` — Remover participação
 
 ### Partidas
 - `GET /partidas/{id}` — Detalhe
@@ -193,24 +208,27 @@ spring-boot-starter-webmvc-test
 
 ## 🎯 Níveis de Implementação
 
-### ✅ Nível 1 — CRUD Essencial
-- [x] Entidades: Campeonato, Temporada, Time, Jogador
-- [x] CRUD completo (GET, POST, PUT, DELETE)
-- [x] Validações básicas
-- [x] DataSeeder com dados iniciais
+### ✅ Nível 1 — CRUD Essencial (COMPLETO)
+- [x] Entidades: Campeonato, Temporada, Time, Jogador, EstatisticaJogador
+- [x] CRUD completo (GET, POST, PUT, DELETE) para Campeonato, Temporada, Time, Jogador
+- [x] Participacao: GET, POST, DELETE
+- [x] Validações básicas (@NotBlank, @NotNull)
+- [x] DataSeeder com dados realistas (3 campeonatos, 8 times, 14 jogadores)
+- [x] GlobalExceptionHandler (404, 400, 409)
+- [x] Postman Collection com 23 endpoints e variáveis de ambiente
 
-### ✅ Nível 2 — Relacionamentos
-- [x] Participacao (Time-Temporada join)
-- [x] Partida (com validações de mandante/visitante)
-- [x] Filtros por temporada, time, rodada, status
-- [x] Dados de seed expandidos
+### ⏳ Nível 2 — Relacionamentos (EM PROGRESSO)
+- [ ] Partida: Completa entidade com todos os campos
+- [ ] Enum StatusPartida
+- [ ] PartidaService com validações (mandante ≠ visitante, participações válidas)
+- [ ] PartidaController com filtros (temporada, rodada, status)
+- [ ] Expandir DataSeeder com Partidas
 
-### ✅ Nível 3 — Regras de Negócio (META MÍNIMA)
-- [x] Registro de resultados (PUT /partidas/{id}/resultado)
-- [x] **Cálculo automático de classificação** com 5 critérios de desempate
-- [x] Estatísticas de jogador (upsert)
-- [x] Rankings (artilharia, assistências)
-- [x] Validações de integridade
+### ⏳ Nível 3 — Regras de Negócio (META MÍNIMA)
+- [ ] Registro de resultados (PUT /partidas/{id}/resultado)
+- [ ] **Cálculo automático de classificação** com 5 critérios de desempate
+- [ ] Endpoints de estatísticas + Rankings (artilharia, assistências)
+- [ ] Validações de integridade
 
 ### 🔄 Nível 4 — Recursos Profissionais (STRETCH GOALS)
 - [ ] Erro padronizado (ProblemDetail)
@@ -227,14 +245,14 @@ spring-boot-starter-webmvc-test
 | Dia | Fase | Status | Progresso |
 |-----|------|--------|-----------|
 | 1 | Setup | ✅ 80% | Git + Config + Packages |
-| 2-3 | Nível 1 Parte A | ⏳ | Campeonato + Temporada |
-| 3 | Nível 1 Parte B | ⏳ | Time + Jogador + Seeder |
-| 4 | CHECKPOINT 1 | ⏳ | Validação manual Nível 1 |
-| 5 | Nível 2 Parte A | ⏳ | Participacao |
-| 6 | Nível 2 Parte B | ⏳ | Partida |
+| 2 | Nível 1 Parte A | ✅ 100% | Campeonato + Temporada |
+| 3 | Nível 1 Parte B | ✅ 100% | Time + Jogador + Participacao + Seeder + Postman |
+| 4 | CHECKPOINT 1 | ⏳ 95% | Validação manual Nível 1 (Collection pronta) |
+| 5 | Nível 2 Parte A | ⏳ | Partida (entidade + campos) |
+| 6 | Nível 2 Parte B | ⏳ | Partida (service + controller + validações) |
 | 7 | CHECKPOINT 2 | ⏳ | Validação manual Nível 2 |
 | 8 | Nível 3 Parte A | ⏳ | Classificação (🔴 ALTO RISCO) |
-| 9 | Nível 3 Parte B | ⏳ | Estatísticas |
+| 9 | Nível 3 Parte B | ⏳ | Endpoints de Estatísticas + Rankings |
 | 10 | CHECKPOINT 3 | ⏳ | Validação Nível 3 (CONGELAMENTO) |
 | 11+ | Nível 4 (Stretch) | ⏳ | Erros, Testes, Auth, etc |
 
@@ -286,5 +304,5 @@ MIT License — Veja [LICENSE](LICENSE) para detalhes.
 
 ---
 
-**Última atualização**: 2026-09-21  
-**Status**: Em desenvolvimento (Dia 1 de 14)
+**Última atualização**: 2026-09-23  
+**Status**: Em desenvolvimento (Dias 1-3 de 14 completos - 22% do projeto)

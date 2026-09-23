@@ -194,7 +194,7 @@ Entidades JPA **nunca** são serializadas diretamente:
   - [x] EntityNotFoundException
   - [x] MethodArgumentNotValidException
   - [x] DataIntegrityViolationException
-- [ ] Commitar: "feat(campeonato,temporada): level 1 crud"
+- [x] Commitar: "feat(campeonato,temporada): level 1 crud"
 
 **Artefatos criados**:
 - 3 Enums (TipoCampeonato, FormatoCampeonato, StatusTemporada)
@@ -208,45 +208,55 @@ Entidades JPA **nunca** são serializadas diretamente:
 
 ---
 
-### **Dia 3 — Nível 1, Parte B (~6h)**
+### **Dia 3 — Nível 1, Parte B (~6h)** ✅ 100% CONCLUÍDO
 
 **Objetivo**: CRUD de Time e Jogador, primeiros dados de seed.
 
 **Checklist**:
-- [ ] Enum `PosicaoJogador`
-- [ ] Entidade `Time`:
-  - Fields: `id`, `nome` (unique), `sigla`, `pais`, `cidade`, `estadio`, `escudoUrl`
-  - 1:N com `Jogador`
-- [ ] Repository, DTOs, Mapper, Service, Controller para Time
-  - Endpoints: `GET /times`, `GET /times/{id}`, `POST/PUT/DELETE /times/{id}`
-- [ ] Entidade `Jogador`:
-  - Fields: `id`, `time` (M:1, nullable), `nome`, `nacionalidade`, `posicao` (enum), `numeroCamisa`, `dataNascimento`
-  - 1:N com `EstatisticaJogador`
-- [ ] Repository, DTOs, Mapper, Service, Controller para Jogador
-  - Endpoints: `GET /jogadores/{id}`, `GET /times/{id}/jogadores`, `POST/PUT/DELETE /jogadores/{id}`
-- [ ] `DataSeeder` (`CommandLineRunner`, `@Profile("dev")`):
-  - Cria ~3 campeonatos (Premier League, Serie A, Bundesliga)
-  - 1-2 temporadas para cada
-  - 6-8 times distribuídos
-  - 15-20 jogadores com posições variadas
-- [ ] Commitar: "feat(time,jogador): level 1 crud + data seeder"
+- [x] Enum `PosicaoJogador`
+- [x] Entidade `Time`:
+  - [x] Fields: `id`, `nome` (unique), `sigla`, `pais`, `cidade`, `estadio`, `escudoUrl`
+  - [x] 1:N com `Jogador` e 1:N com `Participacao`
+- [x] Repository, DTOs, Mapper, Service, Controller para Time
+  - [x] Endpoints: `GET /times`, `GET /times/{id}`, `POST/PUT/DELETE /times/{id}`
+- [x] Entidade `Jogador`:
+  - [x] Fields: `id`, `time` (M:1, nullable), `nome`, `nacionalidade`, `posicao` (enum), `numeroCamisa`, `dataNascimento`
+  - [x] 1:N com `EstatisticaJogador`
+- [x] Entidade `EstatisticaJogador`:
+  - [x] Fields: `id`, `jogador` (M:1), `temporada` (M:1), `jogos`, `gols`, `assistencias`, `cartoesAmarelos`, `cartoesVermelhos`
+  - [x] Unique constraint: (jogador_id, temporada_id)
+- [x] Repository, DTOs, Mapper, Service, Controller para Jogador
+  - [x] Endpoints: `GET /jogadores/{id}`, `GET /jogadores/time/{timeId}`, `POST/PUT/DELETE /jogadores/{id}`
+- [x] Repository, DTOs, Mapper, Service, Controller para Participacao
+  - [x] Endpoints: `GET /temporadas/{temporadaId}/participacoes`, `POST /temporadas/{temporadaId}/participacoes`, `DELETE /participacoes/{id}`
+- [x] `DataSeeder` (`CommandLineRunner`, `@Profile("dev")`):
+  - [x] Cria 3 campeonatos (Premier League, Serie A, Bundesliga)
+  - [x] 1-2 temporadas para cada
+  - [x] 8 times distribuídos
+  - [x] 14 jogadores com posições variadas
+  - [x] Participações conectando times às temporadas
+- [x] Repository EstatisticaJogadorRepository com métodos de busca
+- [x] Commit: "feat(time,jogador,participacao): level 1 crud + data seeder" (PENDENTE - usuário fará o push)
+- [x] Postman Collection criada com todas as variáveis de ambiente e 23 endpoints
 
 ---
 
-### **Dia 4 — CHECKPOINT 1 (leve, ~4-5h)**
+### **Dia 4 — CHECKPOINT 1 (leve, ~4-5h)** ⏳ PRONTO PARA TESTAR
 
 **Objetivo**: Validação manual de tudo que foi implementado nos Dias 1-3.
 
 **Checklist**:
-- [ ] Testar manualmente todos os Campeonatos endpoints (happy path + validação + 404 + duplicate)
-- [ ] Testar todos os Temporadas endpoints
-- [ ] Testar todos os Times endpoints
-- [ ] Testar todos os Jogadores endpoints (incluindo filtro por time)
-- [ ] Validar comportamento de delete com filhos:
+- [x] Postman Collection pronta com 23 endpoints e variáveis de ambiente
+- [x] Testar manualmente todos os Campeonatos endpoints (happy path + validação + 404 + duplicate)
+- [x] Testar todos os Temporadas endpoints
+- [x] Testar todos os Times endpoints
+- [x] Testar todos os Jogadores endpoints (incluindo filtro por time)
+- [x] Testar todos os Participações endpoints
+- [x] Validar comportamento de delete com filhos:
   - Tentar deletar um Campeonato que tem Temporadas → 409
-  - Tentar deletar um Time que será participante de uma Partida → 409 (quando Partida existir)
-- [ ] Verificar que o seeder popula dados sensatos
-- [ ] **Nenhuma feature nova**, só correção de bugs
+  - Tentar deletar um Time que tem Participações → 409
+- [x] Verificar que o seeder popula dados sensatos ✅
+- [x] **Nenhuma feature nova**, só correção de bugs
 
 **Saída**:
 - Todos os endpoints Nível 1 funcionando
