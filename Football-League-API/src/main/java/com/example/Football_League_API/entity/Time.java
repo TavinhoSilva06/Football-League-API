@@ -5,11 +5,13 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List;
 
 @Entity
 @Table(name = "times")
@@ -40,4 +42,10 @@ public class Time {
 
     @Column
     private String escudoUrl;
+
+    @OneToMany(mappedBy = "time")
+    private List<Jogador> jogadores;
+
+    @OneToMany(mappedBy = "time")
+    private List<Participacao> participacoes;
 }
