@@ -17,19 +17,18 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/temporadas/{temporadaId}/participacoes")
 @RequiredArgsConstructor
 public class ParticipacaoController {
 
     private final ParticipacaoService service;
 
-    @GetMapping
+    @GetMapping("/temporadas/{temporadaId}/participacoes")
     public ResponseEntity<List<ParticipacaoResponseDto>> findByTemporadaId(@PathVariable Long temporadaId) {
         List<ParticipacaoResponseDto> participacoes = service.findByTemporadaId(temporadaId);
         return ResponseEntity.ok(participacoes);
     }
 
-    @PostMapping
+    @PostMapping("/temporadas/{temporadaId}/participacoes")
     public ResponseEntity<ParticipacaoResponseDto> create(
             @PathVariable Long temporadaId,
             @Valid @RequestBody ParticipacaoRequestDto dto) {
@@ -37,7 +36,7 @@ public class ParticipacaoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/participacoes/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
