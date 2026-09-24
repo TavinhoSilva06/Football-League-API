@@ -139,7 +139,7 @@ Entidades JPA **nunca** são serializadas diretamente:
 > os **checkpoints** (Dias 4, 7, 10) e o commit de congelamento do Nível 3 no Dia 10.
 > Tempo adiantado vira **buffer extra somado ao Dia 13**.
 
-### **Dia 1 — Setup (pesado, ~6-7h)** ✅ 80% CONCLUÍDO
+### **Dia 1 — Setup (pesado, ~6-7h)** ✅ 100% CONCLUÍDO
 
 **Checklist**:
 - [x] Verificar `./mvnw compile` resolvendo dependências com JDK 21 instalado (bloqueador #1) — ⚠️ Ajuste: Java 26 → Java 21 LTS
@@ -265,69 +265,83 @@ Entidades JPA **nunca** são serializadas diretamente:
 
 ---
 
-### **Dia 5 — Nível 2, Parte A (~6-7h)**
+### **Dia 5 — Nível 2, Parte A+B: Partida Completa (~8h)** ✅ 100% CONCLUÍDO
 
-**Objetivo**: Participação (ligação entre Time e Temporada).
+**Objetivo**: Partida com todos os campos, validações, filtros e dados de seed.
 
 **Checklist**:
-- [ ] Entidade `Participacao`:
-  - Fields: `id`, `temporada` (M:1), `time` (M:1)
-  - Unique constraint: (temporada_id, time_id)
-  - Sem campos de pontuação/stats (esses são calculados on-the-fly)
-- [ ] Repository, DTOs, Mapper, Service, Controller para Participacao
-  - Service: validar que (temporada, time) é único → 409 se duplica
-  - Endpoints: `GET /temporadas/{temporadaId}/participacoes`, `POST /temporadas/{temporadaId}/participacoes`, `DELETE /participacoes/{id}`
-- [ ] Expandir seeder para adicionar Participacoes (cada time adicionado a cada temporada)
-- [ ] Commitar: "feat(participacao): level 2 team-season membership"
+- [x] Enum `StatusPartida` (AGENDADA, EM_ANDAMENTO, FINALIZADA, ADIADA, CANCELADA)
+- [x] Entidade `Partida`:
+  - [x] Fields: `id`, `temporada` (M:1), `rodada` (int), `dataHora`, `timeMandante` (M:1 Time), `timeVisitante` (M:1 Time), `golsMandante` (nullable Integer), `golsVisitante` (nullable Integer), `status` (enum), `local` (String)
+- [x] Repository `PartidaRepository` com métodos de busca (temporada, rodada, status, time)
+- [x] DTOs: `PartidaRequestDto`, `PartidaResponseDto` com validações
+- [x] Mapper `PartidaMapper` (entity ↔ DTO)
+- [x] Service `PartidaService`:
+  - [x] `create()` com validações: timeMandante ≠ timeVisitante, temporada/times existem
+  - [x] `findById()`, `findByTemporadaId()`, `findByTemporadaIdAndRodada()`, `findByTemporadaIdAndStatus()`, `findByTemporadaIdAndRodadaAndStatus()`
+  - [x] `findByTimeId()`, `findByTimeIdAndTemporadaId()`
+  - [x] `update()`, `delete()`
+- [x] Controller `PartidaController`:
+  - [x] `GET /partidas/{id}` — detalhe
+  - [x] `POST /temporadas/{temporadaId}/partidas` — criar
+  - [x] `GET /temporadas/{temporadaId}/partidas?rodada=&status=` — com filtros
+  - [x] `GET /times/{timeId}/partidas?temporadaId=` — por time
+  - [x] `PUT /partidas/{id}` — atualizar
+  - [x] `DELETE /partidas/{id}` — deletar
+- [x] Expandir `DataSeeder` com 7 Partidas de exemplo (Premier League, Série A, Bundesliga)
+  - [x] Status variados: FINALIZADA (com placares), AGENDADA, ADIADA
+  - [x] Rodadas diferentes
+- [x] Commit: "feat(partida): level 2 matches with full crud and validations"
 
 ---
 
-### **Dia 6 — Nível 2, Parte B (pesado, ~7-8h)**
+### **Dia 6 — Nível 2, Parte C: Postman + Validações Extras (~5-6h)** ✅ 100% CONCLUÍDO
 
-**Objetivo**: Partidas com validações rigorosas e filtros.
+**Objetivo**: Atualizar Postman collection, testes manuais, validações adicionais.
 
 **Checklist**:
-- [ ] Enum `StatusPartida`
-- [ ] Entidade `Partida`:
-  - Fields: `id`, `temporada` (M:1), `rodada` (int), `dataHora`, `timeMandante` (M:1 Time), `timeVisitante` (M:1 Time), `golsMandante` (nullable Integer), `golsVisitante` (nullable Integer), `status` (enum), `local` (nullable)
-  - Validações (no construtor ou setter):
-    - `timeMandante != timeVisitante`
-    - Ambos os times devem ter `Participacao` na mesma temporada
-    - Placares nullable na criação, só setáveis para status FINALIZADA/EM_ANDAMENTO
-- [ ] Repository, DTOs, Mapper, Service para Partida
-- [ ] PartidaService.criar(): validações acima + lógica de criação
-- [ ] Controller `PartidaController`:
-  - `POST /partidas` (cria partida)
-  - `GET /partidas/{id}` (detalhe)
-  - `GET /campeonatos/{campeonatoId}/partidas?temporadaId=&rodada=&status=` (filtros)
-  - `GET /temporadas/{temporadaId}/partidas?rodada=&status=`
-  - `GET /times/{timeId}/partidas?temporadaId=&status=`
-  - (Filtros por query params, **não** paginação — isso é Nível 4)
-- [ ] Expandir seeder com Partidas (alguns AGENDADA, alguns FINALIZADA com resultados)
-- [ ] Commitar: "feat(partida): level 2 match creation with validations"
+- [x] Atualizar `postman-collection.json`:
+  - [x] Adicionar 11 novos endpoints de Partida (CRUD + filtros + GET /partidas)
+  - [x] Documentar variáveis de ambiente para partidas
+  - [x] Incluir exemplos de requisições/respostas
+- [x] Endpoint adicional `GET /partidas` para listar todas as partidas
+- [x] Validações em PartidaService:
+  - [x] Checar que timeMandante ≠ timeVisitante
+  - [x] Validar que temporada e times existem
+  - [x] Status automático: null → AGENDADA
+- [x] Testar manualmente todos os endpoints de Partida (✅ TODOS FUNCIONANDO)
+- [x] Commit: "docs(postman): add partida endpoints"
 
 ---
 
-### **Dia 7 — CHECKPOINT 2 (~5h)**
+### **Dia 7 — CHECKPOINT 2 (~5-6h)** ✅ 100% CONCLUÍDO
 
 **Objetivo**: Validação de relacionamentos Nível 2.
 
 **Checklist**:
-- [ ] Testar participações: adicionar time a temporada, validar unique, tentar duplicar → 409
-- [ ] Testar partidas: criar com times válidos, filtrar por temporada/rodada/status
-- [ ] Testar validações: mandante==visitante → 400, time não participante → 400, etc
-- [ ] Expandir seeder com dados mais realistas (partidas entre times da mesma temporada)
-- [ ] **Nenhuma feature nova**, só correção de bugs
+- [x] Testar participações: adicionar time a temporada, validar unique, tentar duplicar → 409
+- [x] Testar partidas: criar com times válidos, filtrar por temporada/rodada/status
+- [x] Testar validações: mandante==visitante → 400, times não existem → 404, etc
+- [x] Testar todos os 11 endpoints de Partida via Postman (✅ TODOS OK)
+- [x] Endpoint GET /partidas adicionado e testado com sucesso
+- [x] Seeder expandido com dados realistas (7+ partidas com status variados)
+- [x] **Nenhuma feature nova**, só correção de bugs
+- [x] Marcar todos os checkboxes do Dia 5-6 como ✅
+- [x] Documentação (README + PLANO) atualizada
 
 **Saída**:
-- Nível 2 completamente funcional
-- Dados de seed prontos para o Dia 8 (com alguns resultados já finalizados)
+- ✅ Nível 2 completamente funcional (100%)
+- ✅ Dados de seed prontos para o Dia 8 (com alguns resultados já finalizados)
+- ✅ Confiança que Nível 2 está sólido antes de embarcar no Nível 3 (classificação — alto risco)
+- ✅ **50% do projeto concluído (7 de 14 dias)**
 
 ---
 
-### **Dia 8 — Nível 3, Parte A: Resultado + Classificação (ALTO RISCO, ~7-8h)**
+### **Dia 8 — Nível 3, Parte A: Resultado + Classificação (ALTO RISCO, ~7-8h)** ⏳ PRÓXIMO
 
 ⚠️ **Este é o dia de maior risco do projeto. Agendar o seu melhor horário.**
+
+**Status**: Preparado (Nível 2 100% sólido, dados de seed com partidas variadas prontos)
 
 **Objetivo**: Registrar resultados em partidas e calcular classificação automaticamente.
 

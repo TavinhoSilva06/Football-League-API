@@ -3,15 +3,18 @@ package com.example.Football_League_API.config;
 import com.example.Football_League_API.entity.Campeonato;
 import com.example.Football_League_API.entity.Jogador;
 import com.example.Football_League_API.entity.Participacao;
+import com.example.Football_League_API.entity.Partida;
 import com.example.Football_League_API.entity.Temporada;
 import com.example.Football_League_API.entity.Time;
 import com.example.Football_League_API.enu.FormatoCampeonato;
 import com.example.Football_League_API.enu.PosicaoJogador;
+import com.example.Football_League_API.enu.StatusPartida;
 import com.example.Football_League_API.enu.StatusTemporada;
 import com.example.Football_League_API.enu.TipoCampeonato;
 import com.example.Football_League_API.repository.CampeonatoRepository;
 import com.example.Football_League_API.repository.JogadorRepository;
 import com.example.Football_League_API.repository.ParticipacaoRepository;
+import com.example.Football_League_API.repository.PartidaRepository;
 import com.example.Football_League_API.repository.TemporadaRepository;
 import com.example.Football_League_API.repository.TimeRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Component
 @Profile("dev")
@@ -30,6 +34,7 @@ public class DataSeeder implements CommandLineRunner {
     private final TimeRepository timeRepository;
     private final JogadorRepository jogadorRepository;
     private final ParticipacaoRepository participacaoRepository;
+    private final PartidaRepository partidaRepository;
 
     @Override
     public void run(String... args) throws Exception {
@@ -318,5 +323,92 @@ public class DataSeeder implements CommandLineRunner {
 
         participacaoRepository.save(Participacao.builder().temporada(bundesliga2024).time(bayernMunique).build());
         participacaoRepository.save(Participacao.builder().temporada(bundesliga2024).time(borussiaDortmund).build());
+
+        // Criar partidas (Premier League 2024/25)
+        partidaRepository.save(Partida.builder()
+                .temporada(premierLeague2024)
+                .rodada(1)
+                .dataHora(LocalDateTime.of(2024, 8, 16, 20, 0))
+                .timeMandante(manchesterCity)
+                .timeVisitante(chelsea)
+                .golsMandante(2)
+                .golsVisitante(0)
+                .status(StatusPartida.FINALIZADA)
+                .local("Etihad Stadium")
+                .build());
+
+        partidaRepository.save(Partida.builder()
+                .temporada(premierLeague2024)
+                .rodada(1)
+                .dataHora(LocalDateTime.of(2024, 8, 16, 15, 0))
+                .timeMandante(liverpool)
+                .timeVisitante(arsenal)
+                .golsMandante(1)
+                .golsVisitante(1)
+                .status(StatusPartida.FINALIZADA)
+                .local("Anfield")
+                .build());
+
+        partidaRepository.save(Partida.builder()
+                .temporada(premierLeague2024)
+                .rodada(2)
+                .dataHora(LocalDateTime.of(2024, 8, 24, 20, 0))
+                .timeMandante(arsenal)
+                .timeVisitante(manchesterCity)
+                .golsMandante(null)
+                .golsVisitante(null)
+                .status(StatusPartida.AGENDADA)
+                .local("Emirates Stadium")
+                .build());
+
+        // Criar partidas (Série A 2024)
+        partidaRepository.save(Partida.builder()
+                .temporada(serieA2024)
+                .rodada(1)
+                .dataHora(LocalDateTime.of(2024, 4, 13, 18, 30))
+                .timeMandante(flamengo)
+                .timeVisitante(saopaulo)
+                .golsMandante(1)
+                .golsVisitante(2)
+                .status(StatusPartida.FINALIZADA)
+                .local("Maracanã")
+                .build());
+
+        partidaRepository.save(Partida.builder()
+                .temporada(serieA2024)
+                .rodada(2)
+                .dataHora(LocalDateTime.of(2024, 4, 20, 16, 0))
+                .timeMandante(saopaulo)
+                .timeVisitante(flamengo)
+                .golsMandante(null)
+                .golsVisitante(null)
+                .status(StatusPartida.AGENDADA)
+                .local("Morumbi")
+                .build());
+
+        // Criar partidas (Bundesliga 2024/25)
+        partidaRepository.save(Partida.builder()
+                .temporada(bundesliga2024)
+                .rodada(1)
+                .dataHora(LocalDateTime.of(2024, 8, 16, 19, 30))
+                .timeMandante(bayernMunique)
+                .timeVisitante(borussiaDortmund)
+                .golsMandante(3)
+                .golsVisitante(1)
+                .status(StatusPartida.FINALIZADA)
+                .local("Allianz Arena")
+                .build());
+
+        partidaRepository.save(Partida.builder()
+                .temporada(bundesliga2024)
+                .rodada(1)
+                .dataHora(LocalDateTime.of(2024, 8, 17, 15, 30))
+                .timeMandante(borussiaDortmund)
+                .timeVisitante(bayernMunique)
+                .golsMandante(null)
+                .golsVisitante(null)
+                .status(StatusPartida.ADIADA)
+                .local("Signal Iduna Park")
+                .build());
     }
 }

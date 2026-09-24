@@ -189,13 +189,14 @@ spring-boot-starter-webmvc-test
 - `POST /temporadas/{temporadaId}/participacoes` — Adicionar time à temporada
 - `DELETE /participacoes/{id}` — Remover participação
 
-### Partidas
+### Partidas ✅ IMPLEMENTADO
+- `GET /partidas` — Listar todas as partidas ✨ NOVO
 - `GET /partidas/{id}` — Detalhe
-- `POST /partidas` — Criar
-- `PUT /partidas/{id}/resultado` — Registrar/corrigir placar
-- `GET /campeonatos/{id}/partidas?temporadaId=&rodada=&status=` — Filtros
-- `GET /temporadas/{id}/partidas?rodada=&status=` — Por temporada
-- `GET /times/{id}/partidas?temporadaId=&status=` — Por time
+- `POST /temporadas/{temporadaId}/partidas` — Criar
+- `PUT /partidas/{id}` — Atualizar resultado/status
+- `GET /temporadas/{temporadaId}/partidas?rodada=&status=` — Por temporada com filtros
+- `GET /times/{timeId}/partidas?temporadaId=` — Por time com filtro de temporada
+- `DELETE /partidas/{id}` — Deletar partida
 
 ### Classificação
 - `GET /temporadas/{id}/classificacao` — Tabela ordenada por desempate
@@ -217,12 +218,18 @@ spring-boot-starter-webmvc-test
 - [x] GlobalExceptionHandler (404, 400, 409)
 - [x] Postman Collection com 23 endpoints e variáveis de ambiente
 
-### ⏳ Nível 2 — Relacionamentos (EM PROGRESSO)
-- [ ] Partida: Completa entidade com todos os campos
-- [ ] Enum StatusPartida
-- [ ] PartidaService com validações (mandante ≠ visitante, participações válidas)
-- [ ] PartidaController com filtros (temporada, rodada, status)
-- [ ] Expandir DataSeeder com Partidas
+### ✅ Nível 2 — Relacionamentos e Partidas (100% COMPLETO)
+- [x] Partida: Entidade completa com todos os campos
+- [x] Enum StatusPartida (AGENDADA, EM_ANDAMENTO, FINALIZADA, ADIADA, CANCELADA)
+- [x] PartidaService com validações (mandante ≠ visitante, temporada/times válidos)
+- [x] PartidaController com CRUD completo + 6 endpoints de filtro
+- [x] Endpoint GET /partidas para listar todas as partidas
+- [x] DTOs PartidaRequestDto e PartidaResponseDto com validações
+- [x] Mapper PartidaMapper para conversão entity ↔ DTO
+- [x] Repository PartidaRepository com múltiplos métodos de busca
+- [x] DataSeeder expandido com 7+ Partidas de exemplo
+- [x] Postman Collection atualizada com endpoints de Partida
+- [x] Validação manual 100% (todos os endpoints testados)
 
 ### ⏳ Nível 3 — Regras de Negócio (META MÍNIMA)
 - [ ] Registro de resultados (PUT /partidas/{id}/resultado)
@@ -244,17 +251,20 @@ spring-boot-starter-webmvc-test
 
 | Dia | Fase | Status | Progresso |
 |-----|------|--------|-----------|
-| 1 | Setup | ✅ 80% | Git + Config + Packages |
+| 1 | Setup | ✅ 100% | Git + Config + Packages + Java 21 |
 | 2 | Nível 1 Parte A | ✅ 100% | Campeonato + Temporada |
 | 3 | Nível 1 Parte B | ✅ 100% | Time + Jogador + Participacao + Seeder + Postman |
-| 4 | CHECKPOINT 1 | ⏳ 95% | Validação manual Nível 1 (Collection pronta) |
-| 5 | Nível 2 Parte A | ⏳ | Partida (entidade + campos) |
-| 6 | Nível 2 Parte B | ⏳ | Partida (service + controller + validações) |
-| 7 | CHECKPOINT 2 | ⏳ | Validação manual Nível 2 |
+| 4 | CHECKPOINT 1 | ✅ 100% | Validação manual Nível 1 (todos endpoints OK) |
+| 5 | Nível 2 | ✅ 100% | Partida completa (CRUD + 6 filtros + validações) |
+| 6 | Nível 2 Polish | ✅ 100% | Endpoint GET /partidas + Postman + validação |
+| 7 | CHECKPOINT 2 | ✅ 100% | Validação manual Nível 2 (todos endpoints OK) |
 | 8 | Nível 3 Parte A | ⏳ | Classificação (🔴 ALTO RISCO) |
 | 9 | Nível 3 Parte B | ⏳ | Endpoints de Estatísticas + Rankings |
 | 10 | CHECKPOINT 3 | ⏳ | Validação Nível 3 (CONGELAMENTO) |
-| 11+ | Nível 4 (Stretch) | ⏳ | Erros, Testes, Auth, etc |
+| 11 | Nível 4 #1+#2 | ⏳ | Testes + Erros Padronizados |
+| 12 | Nível 4 #3 | ⏳ | Autenticação + Favoritos |
+| 13 | Buffer / Stretch | ⏳ | Paginação, Swagger, etc |
+| 14 | Polimento Final | ⏳ | Regressão, README, Push |
 
 ## 📋 Documentação Completa
 
@@ -305,4 +315,5 @@ MIT License — Veja [LICENSE](LICENSE) para detalhes.
 ---
 
 **Última atualização**: 2026-09-23  
-**Status**: Em desenvolvimento (Dias 1-3 de 14 completos - 22% do projeto)
+**Status**: Em desenvolvimento (Dias 1-7 de 14 completos - 50% do projeto)  
+**Próxima Meta**: Iniciar Nível 3 (Classificação Automática - Dia 8) 🎯
