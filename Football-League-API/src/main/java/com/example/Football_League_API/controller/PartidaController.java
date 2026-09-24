@@ -1,6 +1,7 @@
 package com.example.Football_League_API.controller;
 
 import com.example.Football_League_API.dto.request.PartidaRequestDto;
+import com.example.Football_League_API.dto.request.ResultadoRequestDto;
 import com.example.Football_League_API.dto.response.PartidaResponseDto;
 import com.example.Football_League_API.enu.StatusPartida;
 import com.example.Football_League_API.service.PartidaService;
@@ -79,6 +80,14 @@ public class PartidaController {
         }
 
         return ResponseEntity.ok(partidas);
+    }
+
+    @PutMapping("/partidas/{id}/resultado")
+    public ResponseEntity<PartidaResponseDto> registrarResultado(
+            @PathVariable Long id,
+            @Valid @RequestBody ResultadoRequestDto dto) {
+        PartidaResponseDto resultado = service.registrarResultado(id, dto);
+        return ResponseEntity.ok(resultado);
     }
 
     @PutMapping("/partidas/{id}")

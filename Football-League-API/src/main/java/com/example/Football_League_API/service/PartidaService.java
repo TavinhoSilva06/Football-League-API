@@ -1,6 +1,7 @@
 package com.example.Football_League_API.service;
 
 import com.example.Football_League_API.dto.request.PartidaRequestDto;
+import com.example.Football_League_API.dto.request.ResultadoRequestDto;
 import com.example.Football_League_API.dto.response.PartidaResponseDto;
 import com.example.Football_League_API.entity.Partida;
 import com.example.Football_League_API.entity.Temporada;
@@ -188,6 +189,18 @@ public class PartidaService {
                 throw new IllegalArgumentException("Rodada deve ser maior que 0");
             }
         }
+    }
+
+    public PartidaResponseDto registrarResultado(Long id, ResultadoRequestDto dto) {
+        Partida partida = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Partida não encontrada com ID: " + id));
+
+        partida.setGolsMandante(dto.getGolsMandante());
+        partida.setGolsVisitante(dto.getGolsVisitante());
+        partida.setStatus(StatusPartida.FINALIZADA);
+
+        Partida updated = repository.save(partida);
+        return mapper.toResponseDto(updated);
     }
 
     protected Partida findByIdEntity(Long id) {
