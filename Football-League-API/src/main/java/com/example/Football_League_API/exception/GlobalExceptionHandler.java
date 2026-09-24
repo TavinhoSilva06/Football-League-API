@@ -73,6 +73,21 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Trata erros de validação de regras de negócio (IllegalArgumentException).
+     * Retorna HTTP 400 BAD REQUEST quando há violação de regras da aplicação
+     * (ex: rodada fora do limite, times iguais em uma partida, etc).
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex, WebRequest request) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value()); // 400 - Requisição inválida
+        body.put("message", ex.getMessage()); // Mensagem de erro específica da validação
+        body.put("path", request.getDescription(false).replace("uri=", ""));
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
      * Fallback: trata qualquer exceção não capturada pelos handlers acima.
      * Retorna HTTP 500 para erros inesperados, mantendo segurança (sem expor stacktrace).
      */
