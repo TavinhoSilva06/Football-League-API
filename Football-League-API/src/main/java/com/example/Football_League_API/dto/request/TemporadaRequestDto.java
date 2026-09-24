@@ -16,15 +16,14 @@ import java.time.LocalDate;
 @Builder
 public class TemporadaRequestDto {
 
-    @NotNull(message = "ID do campeonato é obrigatório")
-    private Long campeonatoId;
-
     @NotBlank(message = "Nome da temporada é obrigatório")
     private String nome;
 
     private LocalDate dataInicio;
 
     private LocalDate dataFim;
+
+    private Integer numRodadas; // Número máximo de rodadas (ex: 38 para Premier League)
 
     private StatusTemporada status;
 }

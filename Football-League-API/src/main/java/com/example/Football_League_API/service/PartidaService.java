@@ -161,16 +161,33 @@ public class PartidaService {
     }
 
     private void validatePartidaCreation(Long temporadaId, PartidaRequestDto dto) {
+        // Validar que mandante != visitante
         if (dto.getTimeMandanteId().equals(dto.getTimeVisitanteId())) {
             throw new IllegalArgumentException("Time mandante não pode ser igual ao time visitante");
         }
 
-        temporadaRepository.findById(temporadaId)
+        // Validar que temporada existe e obter seus dados
+        Temporada temporada = temporadaRepository.findById(temporadaId)
                 .orElseThrow(() -> new EntityNotFoundException("Temporada não encontrada com ID: " + temporadaId));
+
+        // Validar que times existem
         timeRepository.findById(dto.getTimeMandanteId())
                 .orElseThrow(() -> new EntityNotFoundException("Time não encontrado com ID: " + dto.getTimeMandanteId()));
         timeRepository.findById(dto.getTimeVisitanteId())
                 .orElseThrow(() -> new EntityNotFoundException("Time não encontrado com ID: " + dto.getTimeVisitanteId()));
+
+        // Validar que a rodada não ultrapassa o número máximo de rodadas
+        if (dto.getRodada() != null && temporada.getNumRodadas() != null) {
+            if (dto.getRodada() > temporada.getNumRodadas()) {
+                throw new IllegalArgumentException(
+                    "Rodada " + dto.getRodada() + " não pode ser criada. " +
+                    "Temporada tem apenas " + temporada.getNumRodadas() + " rodadas."
+                );
+            }
+            if (dto.getRodada() < 1) {
+                throw new IllegalArgumentException("Rodada deve ser maior que 0");
+            }
+        }
     }
 
     protected Partida findByIdEntity(Long id) {

@@ -31,6 +31,17 @@ public class TimeService {
         return mapper.toResponseDto(entity);
     }
 
+    /**
+     * Busca todos os times que participam de um campeonato (em qualquer temporada).
+     * Útil para listar elenco completo de um campeonato.
+     */
+    public List<TimeResponseDto> findByCampeonatoId(Long campeonatoId) {
+        return repository.findByCampeonatoId(campeonatoId)
+                .stream()
+                .map(mapper::toResponseDto)
+                .collect(Collectors.toList());
+    }
+
     public TimeResponseDto create(TimeRequestDto dto) {
         Time entity = mapper.toEntity(dto);
         Time saved = repository.save(entity);

@@ -46,6 +46,9 @@ public class Temporada {
     private LocalDate dataFim;
 
     @Column
+    private Integer numRodadas; // Número máximo de rodadas (ex: 38 para Premier League, 34 para Bundesliga)
+
+    @Column
     @Enumerated(EnumType.STRING)
     private StatusTemporada status;
 

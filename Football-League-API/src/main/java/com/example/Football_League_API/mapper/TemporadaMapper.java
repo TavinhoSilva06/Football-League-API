@@ -28,6 +28,7 @@ public class TemporadaMapper {
                 .nome(entity.getNome())
                 .dataInicio(entity.getDataInicio())
                 .dataFim(entity.getDataFim())
+                .numRodadas(entity.getNumRodadas()) // Número máximo de rodadas
                 .status(entity.getStatus()) // Enum: PLANEJADA, EM_ANDAMENTO, ENCERRADA
                 .build();
     }
@@ -45,6 +46,7 @@ public class TemporadaMapper {
                 .nome(dto.getNome())
                 .dataInicio(dto.getDataInicio())
                 .dataFim(dto.getDataFim())
+                .numRodadas(dto.getNumRodadas()) // Número máximo de rodadas
                 .status(dto.getStatus())
                 .build();
     }
@@ -60,6 +62,7 @@ public class TemporadaMapper {
         entity.setNome(dto.getNome());
         entity.setDataInicio(dto.getDataInicio());
         entity.setDataFim(dto.getDataFim());
+        entity.setNumRodadas(dto.getNumRodadas()); // Atualiza número de rodadas
         entity.setStatus(dto.getStatus());
         // campeonato não é alterado (integridade referencial)
     }

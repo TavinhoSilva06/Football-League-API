@@ -23,5 +23,7 @@ public class TemporadaResponseDto {
 
     private LocalDate dataFim;
 
+    private Integer numRodadas; // Número máximo de rodadas da temporada
+
     private StatusTemporada status;
 }

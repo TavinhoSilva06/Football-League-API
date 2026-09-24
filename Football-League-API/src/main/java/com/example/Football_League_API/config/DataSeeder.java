@@ -70,12 +70,13 @@ public class DataSeeder implements CommandLineRunner {
                 .build();
         campeonatoRepository.save(bundesliga);
 
-        // Criar temporadas
+        // Criar temporadas com número de rodadas
         Temporada premierLeague2024 = Temporada.builder()
                 .campeonato(premierLeague)
                 .nome("2024/25")
                 .dataInicio(LocalDate.of(2024, 8, 16))
                 .dataFim(LocalDate.of(2025, 5, 25))
+                .numRodadas(38) // Premier League tem 38 rodadas
                 .status(StatusTemporada.EM_ANDAMENTO)
                 .build();
         temporadaRepository.save(premierLeague2024);
@@ -85,6 +86,7 @@ public class DataSeeder implements CommandLineRunner {
                 .nome("2024")
                 .dataInicio(LocalDate.of(2024, 4, 13))
                 .dataFim(LocalDate.of(2024, 11, 8))
+                .numRodadas(38) // Série A tem 38 rodadas
                 .status(StatusTemporada.EM_ANDAMENTO)
                 .build();
         temporadaRepository.save(serieA2024);
@@ -94,6 +96,7 @@ public class DataSeeder implements CommandLineRunner {
                 .nome("2024/25")
                 .dataInicio(LocalDate.of(2024, 8, 16))
                 .dataFim(LocalDate.of(2025, 5, 24))
+                .numRodadas(34) // Bundesliga tem 34 rodadas
                 .status(StatusTemporada.EM_ANDAMENTO)
                 .build();
         temporadaRepository.save(bundesliga2024);
@@ -324,7 +327,8 @@ public class DataSeeder implements CommandLineRunner {
         participacaoRepository.save(Participacao.builder().temporada(bundesliga2024).time(bayernMunique).build());
         participacaoRepository.save(Participacao.builder().temporada(bundesliga2024).time(borussiaDortmund).build());
 
-        // Criar partidas (Premier League 2024/25)
+        // Criar partidas (Premier League 2024/25 - Rodadas 1 a 5 para exemplo)
+        // Rodada 1 - FINALIZADA
         partidaRepository.save(Partida.builder()
                 .temporada(premierLeague2024)
                 .rodada(1)
@@ -349,19 +353,57 @@ public class DataSeeder implements CommandLineRunner {
                 .local("Anfield")
                 .build());
 
+        // Rodada 2 - EM_ANDAMENTO
         partidaRepository.save(Partida.builder()
                 .temporada(premierLeague2024)
                 .rodada(2)
                 .dataHora(LocalDateTime.of(2024, 8, 24, 20, 0))
                 .timeMandante(arsenal)
                 .timeVisitante(manchesterCity)
-                .golsMandante(null)
-                .golsVisitante(null)
-                .status(StatusPartida.AGENDADA)
+                .status(StatusPartida.EM_ANDAMENTO)
                 .local("Emirates Stadium")
                 .build());
 
-        // Criar partidas (Série A 2024)
+        partidaRepository.save(Partida.builder()
+                .temporada(premierLeague2024)
+                .rodada(2)
+                .dataHora(LocalDateTime.of(2024, 8, 24, 15, 0))
+                .timeMandante(chelsea)
+                .timeVisitante(liverpool)
+                .status(StatusPartida.EM_ANDAMENTO)
+                .local("Stamford Bridge")
+                .build());
+
+        // Rodada 3 a 38 - AGENDADAS (criando apenas rodada 3 como exemplo, resto será AGENDADA)
+        partidaRepository.save(Partida.builder()
+                .temporada(premierLeague2024)
+                .rodada(3)
+                .dataHora(LocalDateTime.of(2024, 8, 31, 20, 0))
+                .timeMandante(manchesterCity)
+                .timeVisitante(arsenal)
+                .status(StatusPartida.AGENDADA)
+                .local("Etihad Stadium")
+                .build());
+
+        // Criar partidas placeholder para rodadas 4-38 (para não poluir o código)
+        for (int rodada = 4; rodada <= 38; rodada++) {
+            int timeIdx = (rodada % 4);
+            Time mandante = timeIdx == 0 ? manchesterCity : (timeIdx == 1 ? liverpool : (timeIdx == 2 ? arsenal : chelsea));
+            Time visitante = timeIdx == 0 ? chelsea : (timeIdx == 1 ? manchesterCity : (timeIdx == 2 ? liverpool : arsenal));
+
+            partidaRepository.save(Partida.builder()
+                    .temporada(premierLeague2024)
+                    .rodada(rodada)
+                    .dataHora(LocalDateTime.of(2024, 8, 31 + (rodada * 7), 20, 0))
+                    .timeMandante(mandante)
+                    .timeVisitante(visitante)
+                    .status(StatusPartida.AGENDADA)
+                    .local("Estádio genérico")
+                    .build());
+        }
+
+        // Criar partidas (Série A 2024 - Rodadas 1 a 38)
+        // Rodada 1 - FINALIZADA
         partidaRepository.save(Partida.builder()
                 .temporada(serieA2024)
                 .rodada(1)
@@ -374,19 +416,36 @@ public class DataSeeder implements CommandLineRunner {
                 .local("Maracanã")
                 .build());
 
+        // Rodada 2 - AGENDADA
         partidaRepository.save(Partida.builder()
                 .temporada(serieA2024)
                 .rodada(2)
                 .dataHora(LocalDateTime.of(2024, 4, 20, 16, 0))
                 .timeMandante(saopaulo)
                 .timeVisitante(flamengo)
-                .golsMandante(null)
-                .golsVisitante(null)
                 .status(StatusPartida.AGENDADA)
                 .local("Morumbi")
                 .build());
 
-        // Criar partidas (Bundesliga 2024/25)
+        // Criar partidas placeholder para rodadas 3-38
+        for (int rodada = 3; rodada <= 38; rodada++) {
+            int timeIdx = (rodada % 2);
+            Time mandante = timeIdx == 0 ? flamengo : saopaulo;
+            Time visitante = timeIdx == 0 ? saopaulo : flamengo;
+
+            partidaRepository.save(Partida.builder()
+                    .temporada(serieA2024)
+                    .rodada(rodada)
+                    .dataHora(LocalDateTime.of(2024, 4, 20 + (rodada * 7), 16, 0))
+                    .timeMandante(mandante)
+                    .timeVisitante(visitante)
+                    .status(StatusPartida.AGENDADA)
+                    .local("Estádio genérico")
+                    .build());
+        }
+
+        // Criar partidas (Bundesliga 2024/25 - Rodadas 1 a 34)
+        // Rodada 1 - FINALIZADA
         partidaRepository.save(Partida.builder()
                 .temporada(bundesliga2024)
                 .rodada(1)
@@ -399,16 +458,32 @@ public class DataSeeder implements CommandLineRunner {
                 .local("Allianz Arena")
                 .build());
 
+        // Rodada 2 - ADIADA
         partidaRepository.save(Partida.builder()
                 .temporada(bundesliga2024)
-                .rodada(1)
-                .dataHora(LocalDateTime.of(2024, 8, 17, 15, 30))
+                .rodada(2)
+                .dataHora(LocalDateTime.of(2024, 8, 24, 15, 30))
                 .timeMandante(borussiaDortmund)
                 .timeVisitante(bayernMunique)
-                .golsMandante(null)
-                .golsVisitante(null)
                 .status(StatusPartida.ADIADA)
                 .local("Signal Iduna Park")
                 .build());
+
+        // Criar partidas placeholder para rodadas 3-34
+        for (int rodada = 3; rodada <= 34; rodada++) {
+            int timeIdx = (rodada % 2);
+            Time mandante = timeIdx == 0 ? bayernMunique : borussiaDortmund;
+            Time visitante = timeIdx == 0 ? borussiaDortmund : bayernMunique;
+
+            partidaRepository.save(Partida.builder()
+                    .temporada(bundesliga2024)
+                    .rodada(rodada)
+                    .dataHora(LocalDateTime.of(2024, 8, 24 + (rodada * 7), 19, 30))
+                    .timeMandante(mandante)
+                    .timeVisitante(visitante)
+                    .status(StatusPartida.AGENDADA)
+                    .local("Estádio genérico")
+                    .build());
+        }
     }
 }

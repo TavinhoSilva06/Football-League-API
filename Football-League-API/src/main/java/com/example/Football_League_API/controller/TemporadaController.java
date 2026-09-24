@@ -22,6 +22,12 @@ public class TemporadaController {
 
     private final TemporadaService service;
 
+    @GetMapping("/temporadas")
+    public ResponseEntity<List<TemporadaResponseDto>> findAll() {
+        List<TemporadaResponseDto> temporadas = service.findAll();
+        return ResponseEntity.ok(temporadas);
+    }
+
     @GetMapping("/campeonatos/{campeonatoId}/temporadas")
     public ResponseEntity<List<TemporadaResponseDto>> findByCampeonato(@PathVariable Long campeonatoId) {
         List<TemporadaResponseDto> temporadas = service.findByCampeonato(campeonatoId);
@@ -54,5 +60,12 @@ public class TemporadaController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/temporadas/{id}/encerrar")
+    public ResponseEntity<TemporadaResponseDto> encerrar(@PathVariable Long id) {
+        // Verifica se está completa e encerra
+        TemporadaResponseDto encerrada = service.encerrar(id);
+        return ResponseEntity.ok(encerrada);
     }
 }

@@ -2,7 +2,9 @@ package com.example.Football_League_API.controller;
 
 import com.example.Football_League_API.dto.request.CampeonatoRequestDto;
 import com.example.Football_League_API.dto.response.CampeonatoResponseDto;
+import com.example.Football_League_API.dto.response.TimeResponseDto;
 import com.example.Football_League_API.service.CampeonatoService;
+import com.example.Football_League_API.service.TimeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +25,7 @@ import java.util.List;
 public class CampeonatoController {
 
     private final CampeonatoService service;
+    private final TimeService timeService;
 
     @GetMapping
     public ResponseEntity<List<CampeonatoResponseDto>> findAll() {
@@ -34,6 +37,15 @@ public class CampeonatoController {
     public ResponseEntity<CampeonatoResponseDto> findById(@PathVariable Long id) {
         CampeonatoResponseDto campeonato = service.findById(id);
         return ResponseEntity.ok(campeonato);
+    }
+
+    @GetMapping("/{id}/times")
+    public ResponseEntity<List<TimeResponseDto>> findTimesByCampeonato(@PathVariable Long id) {
+        // Valida se campeonato existe
+        service.findById(id);
+        // Busca todos os times que participam deste campeonato
+        List<TimeResponseDto> times = timeService.findByCampeonatoId(id);
+        return ResponseEntity.ok(times);
     }
 
     @PostMapping
