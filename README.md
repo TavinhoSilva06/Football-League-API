@@ -156,19 +156,22 @@ spring-boot-starter-webmvc-test
 
 ## 📚 Endpoints Principais
 
-### Campeonatos
+### Campeonatos ✅ IMPLEMENTADO
 - `GET /campeonatos` — Listar todos
 - `GET /campeonatos/{id}` — Detalhe
+- `GET /campeonatos/{id}/times` — Times participantes ✨ NOVO
 - `POST /campeonatos` — Criar
 - `PUT /campeonatos/{id}` — Atualizar
 - `DELETE /campeonatos/{id}` — Deletar
 
-### Temporadas
+### Temporadas ✅ IMPLEMENTADO
+- `GET /temporadas` — Listar todas (com numRodadas) ✨ NOVO
 - `GET /campeonatos/{campeonatoId}/temporadas` — Listar por campeonato
 - `GET /temporadas/{id}` — Detalhe
-- `POST /campeonatos/{campeonatoId}/temporadas` — Criar
+- `POST /campeonatos/{campeonatoId}/temporadas` — Criar (com numRodadas)
 - `PUT /temporadas/{id}` — Atualizar
 - `DELETE /temporadas/{id}` — Deletar
+- `PUT /temporadas/{id}/encerrar` — Encerrar quando todas rodadas forem jogadas ✨ NOVO
 
 ### Times
 - `GET /times` — Listar todos
@@ -190,9 +193,9 @@ spring-boot-starter-webmvc-test
 - `DELETE /participacoes/{id}` — Remover participação
 
 ### Partidas ✅ IMPLEMENTADO
-- `GET /partidas` — Listar todas as partidas ✨ NOVO
+- `GET /partidas` — Listar todas as partidas
 - `GET /partidas/{id}` — Detalhe
-- `POST /temporadas/{temporadaId}/partidas` — Criar
+- `POST /temporadas/{temporadaId}/partidas` — Criar (com validação de rodadas)
 - `PUT /partidas/{id}` — Atualizar resultado/status
 - `GET /temporadas/{temporadaId}/partidas?rodada=&status=` — Por temporada com filtros
 - `GET /times/{timeId}/partidas?temporadaId=` — Por time com filtro de temporada
@@ -314,6 +317,32 @@ MIT License — Veja [LICENSE](LICENSE) para detalhes.
 
 ---
 
-**Última atualização**: 2026-09-23  
-**Status**: Em desenvolvimento (Dias 1-7 de 14 completos - 50% do projeto)  
+## 🎯 Funcionalidades Extras Implementadas (Além do Plano)
+
+Durante o Checkpoint 2, foram adicionadas funcionalidades extras para melhorar a robustez:
+
+### ✨ Novos Endpoints
+- `GET /temporadas` — Lista todas as temporadas com numRodadas
+- `GET /campeonatos/{id}/times` — Lista times de um campeonato
+- `PUT /temporadas/{id}/encerrar` — Encerra temporada quando todas rodadas são jogadas
+
+### ✨ Validações Avançadas
+- **Validação de Rodadas**: Não permite criar Partida com rodada > numRodadas
+- **Encerramento Automático**: Temporada só encerra quando TODAS rodadas forem finalizadas
+- **Tratamento de Erros**: `IllegalArgumentException` retorna HTTP 400 com mensagem customizada
+
+### ✨ Estrutura de Dados Aprimorada
+- Campo `numRodadas` em Temporada (38 para Premier League/Série A, 34 para Bundesliga)
+- DTOs (Request/Response) atualizados com numRodadas
+- DataSeeder com 110+ partidas distribuídas apropriadamente
+
+### ✨ Código Comentado
+- GlobalExceptionHandler com explicações detalhadas
+- Mappers com documentação dos fluxos de conversão
+- Services com comentários em métodos críticos
+
+---
+
+**Última atualização**: 2026-09-24  
+**Status**: Em desenvolvimento (Dias 1-7 de 14 completos - 50% do projeto + Melhorias Extras)  
 **Próxima Meta**: Iniciar Nível 3 (Classificação Automática - Dia 8) 🎯

@@ -121,6 +121,23 @@ Entidades JPA **nunca** são serializadas diretamente:
 - Dados esportivos não devem sumir em cascata
 - Exemplos: não posso deletar um Time que tem Participações/Partidas
 
+### Encerramento de Temporada (Decisão Extra)
+
+**Baseado em Rodadas Completas, não em Datas**:
+- Cada Temporada tem `numRodadas` (38 Premier League/Série A, 34 Bundesliga)
+- Partida só pode ter `rodada` ≤ `numRodadas` (validação em PartidaService)
+- Temporada encerra com `PUT /temporadas/{id}/encerrar` quando **TODAS** rodadas forem FINALIZADA
+- Evita problema de partidas adiadas: data limite não impede encerramento
+
+### Tratamento de Exceções (Aprimorado)
+
+**GlobalExceptionHandler** com 5 handlers:
+- `EntityNotFoundException` → 404 NOT_FOUND
+- `MethodArgumentNotValidException` → 400 BAD_REQUEST (validação de campos)
+- `DataIntegrityViolationException` → 409 CONFLICT (duplicação)
+- `IllegalArgumentException` → 400 BAD_REQUEST **(novo)** (regras de negócio)
+- `Exception` (genérico) → 500 INTERNAL_SERVER_ERROR (fallback)
+
 ### Git & Commits
 
 - **Repo**: Inicializado na pasta **externa** `Football-League-API/` (captura `.idea/` + módulo Maven juntos)
@@ -316,24 +333,35 @@ Entidades JPA **nunca** são serializadas diretamente:
 
 ### **Dia 7 — CHECKPOINT 2 (~5-6h)** ✅ 100% CONCLUÍDO
 
-**Objetivo**: Validação de relacionamentos Nível 2.
+**Objetivo**: Validação de relacionamentos Nível 2 + Melhorias Arquiteturais.
 
-**Checklist**:
+**Checklist - Validações**:
 - [x] Testar participações: adicionar time a temporada, validar unique, tentar duplicar → 409
 - [x] Testar partidas: criar com times válidos, filtrar por temporada/rodada/status
 - [x] Testar validações: mandante==visitante → 400, times não existem → 404, etc
 - [x] Testar todos os 11 endpoints de Partida via Postman (✅ TODOS OK)
 - [x] Endpoint GET /partidas adicionado e testado com sucesso
-- [x] Seeder expandido com dados realistas (7+ partidas com status variados)
-- [x] **Nenhuma feature nova**, só correção de bugs
-- [x] Marcar todos os checkboxes do Dia 5-6 como ✅
-- [x] Documentação (README + PLANO) atualizada
+
+**Checklist - Melhorias Implementadas**:
+- [x] Adicionar campo `numRodadas` à Temporada (38 Premier/Série A, 34 Bundesliga)
+- [x] Endpoint `GET /temporadas` para listar todas as temporadas
+- [x] Endpoint `GET /campeonatos/{id}/times` para listar times de um campeonato
+- [x] Método `isCompleta()` no TemporadaService (verifica se todas rodadas foram jogadas)
+- [x] Endpoint `PUT /temporadas/{id}/encerrar` (encerra temporada automaticamente)
+- [x] Validação de rodadas na criação de Partida (rodada ≤ numRodadas)
+- [x] Handler para `IllegalArgumentException` no GlobalExceptionHandler (retorna 400 com mensagem customizada)
+- [x] Atualizar DataSeeder com numRodadas e partidas apropriadas (38-34 rodadas geradas)
+- [x] Comentários explicativos em GlobalExceptionHandler, Mappers e Services
+- [x] Atualizar DTOs (TemporadaRequestDto, TemporadaResponseDto) com numRodadas
 
 **Saída**:
 - ✅ Nível 2 completamente funcional (100%)
-- ✅ Dados de seed prontos para o Dia 8 (com alguns resultados já finalizados)
+- ✅ Sistema de rodadas e encerramento de temporada implementado
+- ✅ Validações robustas com mensagens de erro claras (400 com IllegalArgumentException)
+- ✅ Dados de seed com 110+ partidas distribuídas em rodadas apropriadas
+- ✅ Novos endpoints úteis para visualização de relacionamentos
 - ✅ Confiança que Nível 2 está sólido antes de embarcar no Nível 3 (classificação — alto risco)
-- ✅ **50% do projeto concluído (7 de 14 dias)**
+- ✅ **50% do projeto concluído (7 de 14 dias)** + Melhorias extras
 
 ---
 
