@@ -1,348 +1,399 @@
-# Football League API
+   # Football League API
 
-Uma **API REST profissional em Java/Spring Boot** para gerenciamento de competições de futebol, temporadas, times, jogadores, partidas e classificações automáticas.
+Uma **plataforma completa de gerenciamento de competições de futebol** com API REST em Java/Spring Boot + Frontend React profissional.
 
 ## 📋 Sobre o Projeto
 
-O **Football League API** é um projeto acadêmico desenvolvido como parte do curso de Engenharia de Software na **FATEC-SP**, com foco em aplicar padrões de arquitetura, design patterns e boas práticas de desenvolvimento.
+O **Football League API** é um projeto acadêmico desenvolvido como parte do curso de Engenharia de Software na **FATEC-SP**, com foco em aplicar padrões de arquitetura, design patterns e boas práticas de desenvolvimento full-stack.
 
-A API permite:
-- ✅ Cadastro e gerenciamento de campeonatos (Premier League, Serie A, Bundesliga, etc)
-- ✅ Organização de temporadas (edições anuais)
+### Funcionalidades
+
+#### 🎮 Frontend (React + Vite + Tailwind CSS)
+- ✅ Interface moderna e responsiva com tema vermelho/branco
+- ✅ Navegação intuitiva: Campeonatos → Temporadas → Partidas
+- ✅ Gerenciamento completo de times e elencos
+- ✅ Animações suaves e efeitos visuais profissionais
+- ✅ Validação de formulários com feedback de erro por campo
+- ✅ Cache inteligente com React Query
+- ✅ Proxy Vite resolvendo CORS automaticamente
+
+#### 🔧 API REST (Spring Boot)
+- ✅ Cadastro e gerenciamento de campeonatos
+- ✅ Organização de temporadas com rodadas configuráveis
 - ✅ Gestão de times e elencos de jogadores
 - ✅ Registro de partidas com placares e resultados
-- ✅ **Cálculo automático de classificações** com critérios de desempate (pontos → vitórias → saldo de gols → gols pró → nome)
-- ✅ Estatísticas de jogadores (gols, assistências, cartões)
-- ✅ (Stretch Goal) Favoritos de usuários e autenticação por sessão
-- ✅ (Stretch Goal) Paginação, filtros, Swagger/OpenAPI, cache, auditoria
-
-## 🎯 Objetivo
-
-Implementar um sistema de backend robusto, bem estruturado e extensível para suportar múltiplos campeonatos de futebol simultâneos, com regras de negócio complexas (cálculo de classificação) e um design que permita evolução futura (novos formatos de competição, eventos de jogo, análises).
+- ✅ **Cálculo automático de classificações** com 5 critérios de desempate
+- ✅ 37 endpoints RESTful totalmente implementados
+- ✅ Validação robusta com mensagens em português
 
 ## 🏗️ Arquitetura
 
-### Estrutura de Camadas
-
 ```
 Football-League-API/
-└── Football-League-API/
-    └── src/main/java/com/example/Football_League_API/
-        ├── controller/          → REST endpoints (@RestController)
-        ├── service/             → Lógica de negócio (@Service)
-        ├── repository/          → Acesso a dados (JpaRepository)
-        ├── entity/              → Entidades JPA (@Entity)
-        ├── dto/
-        │   ├── request/         → DTOs de entrada (POST/PUT)
-        │   └── response/        → DTOs de saída (GET)
-        ├── mapper/              → Conversão entity ↔ DTO (manual)
-        ├── exception/           → Exceções customizadas + GlobalExceptionHandler
-        ├── enum/                → Enums de domínio (TipoCampeonato, StatusPartida, etc)
-        ├── config/              → Configurações Spring
-        ├── validation/          → Validadores customizados
-        └── security/            → Autenticação/Autorização (Nível 4)
+├── backend/                          # API Spring Boot
+│   ├── src/main/java/.../
+│   │   ├── controller/              # 8 Controllers (37 endpoints)
+│   │   ├── service/                 # Lógica de negócio
+│   │   ├── repository/              # Acesso a dados JPA
+│   │   ├── entity/                  # 7 Entidades JPA
+│   │   ├── dto/                     # Request/Response DTOs
+│   │   ├── mapper/                  # Conversão entity ↔ DTO
+│   │   ├── exception/               # GlobalExceptionHandler
+│   │   └── enum/                    # Enums de domínio
+│   ├── pom.xml
+│   └── compose.yaml                 # Docker Compose (PostgreSQL local)
+│
+├── frontend/                         # React + Vite
+│   ├── src/
+│   │   ├── pages/                   # 7 páginas (Campeonatos, Temporadas, Times, etc)
+│   │   ├── components/              # UI reutilizáveis + Layout
+│   │   ├── api/                     # Cliente axios + hooks React Query
+│   │   ├── lib/                     # Utilitários (enums, formatação)
+│   │   ├── App.jsx                  # Roteador principal
+│   │   └── index.css                # Tailwind + animações
+│   ├── docs/                         # Documentação de cada tela
+│   ├── vite.config.js               # Proxy CORS
+│   └── package.json
+│
+└── README.md                         # Este arquivo
 ```
-
-### Decisões Arquiteturais Principais
-
-1. **Classificação On-the-Fly** (sem tabela persistida)
-   - A cada `GET .../classificacao`, calcula resultado atual a partir das partidas finalizadas
-   - Elimina risco de contagem duplicada ao corrigir resultados
-   - Extensível para formatos futuros (grupos, mata-mata)
-
-2. **DTOs em Toda a API**
-   - Entidades JPA nunca são serializadas diretamente
-   - Mappers manuais (sem MapStruct) para simplicidade em 2 semanas
-
-3. **Enums com STRING**
-   - `@Enumerated(EnumType.STRING)` — legível no BD ao debugar
-
-4. **Delete com Restrição**
-   - Não posso deletar uma Campeonato que tem Temporadas (409)
-   - Evita cascata silenciosa e perda de dados
 
 ## 🛠️ Tecnologias
 
-| Categoria | Tecnologia | Versão |
-|-----------|-----------|--------|
-| **Linguagem** | Java | 21 LTS |
-| **Framework** | Spring Boot | 4.2.0-SNAPSHOT |
-| **Build** | Maven | 3.9.16 |
-| **ORM** | Spring Data JPA / Hibernate | Automático (Parent) |
-| **Segurança** | Spring Security | Automático (Parent) |
-| **Sessão** | Spring Session JDBC | Automático (Parent) |
-| **Banco de Dados** | PostgreSQL | 16-alpine |
-| **Testing** | JUnit 5 | Automático (Parent) |
-| **Utilidades** | Lombok | Automático (Parent) |
+| Aspecto | Tecnologia | Versão |
+|--------|-----------|--------|
+| **Backend - Linguagem** | Java | 21 LTS |
+| **Backend - Framework** | Spring Boot | 3.2.0 |
+| **Backend - Build** | Maven | 3.9.16+ |
+| **Backend - ORM** | Hibernate / Spring Data JPA | 6.3.1 |
+| **Backend - Banco** | PostgreSQL | 16-alpine (docker) |
+| **Frontend - Framework** | React | 19.2 |
+| **Frontend - Build** | Vite | 8.3 |
+| **Frontend - Estilos** | Tailwind CSS | 4.3 |
+| **Frontend - HTTP** | Axios | 1.20 |
+| **Frontend - Cache** | TanStack React Query | 5.104 |
+| **Frontend - Routing** | React Router | 7.18 |
 
-## 📦 Dependências Principais
-
-```xml
-<!-- Data & ORM -->
-spring-boot-starter-data-jpa
-spring-boot-starter-web
-postgresql (driver)
-
-<!-- Segurança & Sessão -->
-spring-boot-starter-security
-spring-boot-starter-session-jdbc
-
-<!-- Desenvolvimento -->
-spring-boot-devtools
-spring-boot-docker-compose
-lombok
-
-<!-- Testes -->
-spring-boot-starter-data-jpa-test
-spring-boot-starter-security-test
-spring-boot-starter-webmvc-test
-```
-
-## 🚀 Como Rodar
+## 🚀 Como Rodar o Projeto
 
 ### Pré-requisitos
 
-- **Java 21 LTS** (ou superior)
-- **Maven 3.9.16+** (ou usar o wrapper `./mvnw`)
-- **Docker + Docker Compose** (para PostgreSQL)
+- **Node.js 18+** (`node -v`)
+- **Java 21 LTS** (`java -version`)
+- **Maven 3.9+** (usar `./mvnw` do repositório)
+- **Docker + Docker Compose** (para opção local)
 
-### Setup Inicial
+---
 
-1. **Clone o repositório**
-   ```bash
-   git clone https://github.com/TavinhoSilva06/Football-League-API.git
-   cd Football-League-API/Football-League-API
-   ```
+## 📌 Opção 1: Com Docker Compose (Banco Local)
 
-2. **Inicie o PostgreSQL via Docker Compose**
-   ```bash
-   docker-compose up -d
-   ```
-   - Cria um container Postgres `postgres:16-alpine`
-   - DB: `mydatabase`, User: `myuser`, Password: `secret`
-   - Disponível em `localhost:5432` (porta dinâmica)
+### Setup
 
-3. **Compile e rode a aplicação com Profile DEV**
-   ```bash
-   ./mvnw clean spring-boot:run -Dspring.profiles.active=dev
-   ```
-   - Ou, em Windows PowerShell:
-   ```powershell
-   ./mvnw.cmd spring-boot:run "-Dspring.profiles.active=dev"
-   ```
-   - Ou via IntelliJ: Configurar em **Run** → **Edit Configurations** → Maven → `-Dspring.profiles.active=dev`
+```bash
+# Clone o repositório
+git clone https://github.com/TavinhoSilva06/Football-League-API.git
+cd Football-League-API
+```
 
-4. **Aguarde o DataSeeder popular o banco**
-   - A aplicação cria automaticamente:
-     - 3 campeonatos (Premier League, Série A, Bundesliga)
-     - 3 temporadas
-     - 8 times
-     - 14 jogadores
-     - 8 participações
+### 1️⃣ Backend (com banco local)
 
-5. **Acesse a API**
-   - Base URL: `http://localhost:8080`
-   - Exemplo: `GET http://localhost:8080/campeonatos`
+```powershell
+# Terminal 1 - Backend
+cd backend
 
-6. **Usar Postman para testar (RECOMENDADO)**
-   - Abra Postman e importe: `Football-League-API/docs/postman-collection.json`
-   - Crie um Environment com `base_url = http://localhost:8080`
-   - Todos os 23 endpoints estão organizados e prontos para testar
+# Inicie o PostgreSQL em container
+docker-compose up -d
 
-7. **Ver logs**
-   - SQL queries: Ativadas por padrão (`spring.jpa.show-sql=true`)
-   - Hibernate logging: DEBUG habilitado em `application.properties`
-   - Procure por "DataSeeder" para confirmar a população de dados
+# O backend vai usar o banco local automaticamente
+# Abra o arquivo: backend\src\main\resources\application.properties
+# Verifique que NÃO há variável ${DB_PASSWORD} (use o compose.yaml)
 
-## 📚 Endpoints Principais
+# Compile e rode
+./mvnw spring-boot:run
+```
 
-### Campeonatos ✅ IMPLEMENTADO
-- `GET /campeonatos` — Listar todos
+**✅ Saída esperada:**
+```
+HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection
+Started FootballLeagueApiApplication in X seconds
+```
+
+Backend em `http://localhost:8080` com dados de seed automaticamente populados.
+
+### 2️⃣ Frontend
+
+```powershell
+# Terminal 2 - Frontend
+cd frontend
+
+# Instale dependências (primeira vez apenas)
+npm install
+
+# Rode o dev server
+npm run dev
+```
+
+**✅ Saída esperada:**
+```
+VITE Local: http://localhost:5173
+```
+
+Frontend em `http://localhost:5173` → abre automaticamente no navegador.
+
+---
+
+## 📌 Opção 2: Com Supabase (Banco Remoto)
+
+### Setup
+
+1. **Crie uma conta em [Supabase](https://supabase.com)**
+2. **Crie um projeto** e copie:
+   - Host: `db.xxxxx.supabase.co`
+   - Database: `postgres`
+   - User: `postgres`
+   - Password: sua senha
+
+### 1️⃣ Backend (com Supabase)
+
+```powershell
+# Terminal 1 - Backend
+cd backend
+
+# IMPORTANTE: Defina a senha do Supabase
+$env:DB_PASSWORD = "sua_senha_supabase_aqui"
+
+# Verifique
+echo $env:DB_PASSWORD
+
+# Compile e rode
+./mvnw spring-boot:run
+```
+
+**O que acontece:**
+- O `application.properties` lê `${DB_PASSWORD}` da variável de ambiente
+- Conecta ao Supabase automaticamente
+- DataSeeder popula com 3 campeonatos, 8 times, 14 jogadores, etc.
+
+**✅ Verifique no Supabase:**
+- Abra SQL Editor do projeto
+- Veja as tabelas: `campeonatos`, `times`, `jogadores`, etc.
+
+### 2️⃣ Frontend
+
+```powershell
+# Terminal 2 - Frontend
+cd frontend
+npm install
+npm run dev
+```
+
+**Tudo funciona igual.** O frontend não sabe (nem precisa) se o banco é local ou Supabase!
+
+---
+
+## 📊 Comparação: Docker Compose vs Supabase
+
+| Aspecto | Docker Compose | Supabase |
+|---------|---|---|
+| **Custos** | Grátis | Grátis (tier) |
+| **Setup** | Automático | Criar conta |
+| **Dados Persistem** | Até `docker-compose down` | Sempre |
+| **Acesso SQL** | Via `psql` | Via Supabase UI |
+| **Para Desenvolvimento** | ✅ Recomendado | ⚠️ Cuidado com dados públicos |
+| **Para Produção** | ❌ Não use | ✅ Ideal |
+| **CORS** | Proxy Vite | Proxy Vite |
+
+---
+
+## 🎯 Fluxo de Uso (Frontend)
+
+1. **Navegação**: `Campeonatos` → selecione um campeonato
+2. **Temporadas**: Clique em "📅 Gerenciar Temporadas"
+3. **Criar Temporada**: Nome, datas, número de rodadas, status
+4. **Inscrever Times**: Aba "Times Inscritos" → "Inscrever Time"
+5. **Criar Partidas**: Aba "Partidas" → "Nova Partida"
+   - Mandante, Visitante, Rodada, Data/Hora
+   - Validação automática: mandante ≠ visitante
+6. **Registrar Resultado**: Clique em "⚡ Resultado" na partida
+   - Gols (≥ 0), força status para FINALIZADA
+7. **Ver Classificação**: Aba "Classificação" → tabela automática!
+8. **Times**: Gerenciar elencos, ver jogadores por posição
+
+---
+
+## 📡 37 Endpoints Implementados
+
+### Campeonatos (6)
+- `GET /campeonatos` — Lista todos
 - `GET /campeonatos/{id}` — Detalhe
-- `GET /campeonatos/{id}/times` — Times participantes ✨ NOVO
+- `GET /campeonatos/{id}/times` — Times participantes
 - `POST /campeonatos` — Criar
-- `PUT /campeonatos/{id}` — Atualizar
-- `DELETE /campeonatos/{id}` — Deletar
+- `PUT /campeonatos/{id}` — Editar
+- `DELETE /campeonatos/{id}` — Deletar (restrição: sem temporadas)
 
-### Temporadas ✅ IMPLEMENTADO
-- `GET /temporadas` — Listar todas (com numRodadas) ✨ NOVO
-- `GET /campeonatos/{campeonatoId}/temporadas` — Listar por campeonato
+### Temporadas (7)
+- `GET /temporadas` — Lista todas
 - `GET /temporadas/{id}` — Detalhe
-- `POST /campeonatos/{campeonatoId}/temporadas` — Criar (com numRodadas)
-- `PUT /temporadas/{id}` — Atualizar
+- `GET /campeonatos/{id}/temporadas` — Por campeonato
+- `POST /campeonatos/{id}/temporadas` — Criar
+- `PUT /temporadas/{id}` — Editar
+- `PUT /temporadas/{id}/encerrar` — Encerrar (se todas rodadas ✓)
 - `DELETE /temporadas/{id}` — Deletar
-- `PUT /temporadas/{id}/encerrar` — Encerrar quando todas rodadas forem jogadas ✨ NOVO
 
-### Times
-- `GET /times` — Listar todos
+### Times (5)
+- `GET /times` — Lista todos
 - `GET /times/{id}` — Detalhe
-- `GET /times/{id}/jogadores` — Jogadores do time
 - `POST /times` — Criar
-- `PUT /times/{id}` — Atualizar
+- `PUT /times/{id}` — Editar
 - `DELETE /times/{id}` — Deletar
 
-### Jogadores
+### Jogadores (4)
 - `GET /jogadores/{id}` — Detalhe
+- `GET /jogadores/time/{id}` — Por time
 - `POST /jogadores` — Criar
-- `PUT /jogadores/{id}` — Atualizar
+- `PUT /jogadores/{id}` — Editar
 - `DELETE /jogadores/{id}` — Deletar
 
-### Participações (Time-Temporada) ✅ IMPLEMENTADO
-- `GET /temporadas/{temporadaId}/participacoes` — Listar participações de uma temporada
-- `POST /temporadas/{temporadaId}/participacoes` — Adicionar time à temporada
-- `DELETE /participacoes/{id}` — Remover participação
+### Participações (3)
+- `GET /temporadas/{id}/participacoes` — Lista
+- `POST /temporadas/{id}/participacoes` — Inscrever time
+- `DELETE /participacoes/{id}` — Remover
 
-### Partidas ✅ IMPLEMENTADO
-- `GET /partidas` — Listar todas as partidas
+### Partidas (8)
+- `GET /partidas` — Todas
 - `GET /partidas/{id}` — Detalhe
-- `POST /temporadas/{temporadaId}/partidas` — Criar (com validação de rodadas)
-- `PUT /partidas/{id}` — Atualizar resultado/status
-- `GET /temporadas/{temporadaId}/partidas?rodada=&status=` — Por temporada com filtros
-- `GET /times/{timeId}/partidas?temporadaId=` — Por time com filtro de temporada
-- `DELETE /partidas/{id}` — Deletar partida
+- `GET /temporadas/{id}/partidas` — Por temporada (filtros: rodada, status)
+- `GET /times/{id}/partidas` — Por time (filtro: temporada)
+- `POST /temporadas/{id}/partidas` — Criar
+- `PUT /partidas/{id}` — Editar
+- `PUT /partidas/{id}/resultado` — Registrar/corrigir resultado
+- `DELETE /partidas/{id}` — Deletar
 
-### Classificação
-- `GET /temporadas/{id}/classificacao` — Tabela ordenada por desempate
-- `GET /campeonatos/{id}/classificacao` — Tabela da temporada atual/EM_ANDAMENTO
+### Classificação (1)
+- `GET /temporadas/{id}/classificacao` — Tabela com desempate automático
 
-### Estatísticas
-- `GET /jogadores/{id}/estatisticas?temporadaId=` — Stats de jogador
-- `GET /temporadas/{id}/artilharia?limit=10` — Top 10 goleadores
-- `GET /temporadas/{id}/assistencias?limit=10` — Top 10 assistentes
+---
 
-## 🎯 Níveis de Implementação
+## 🎨 Frontend: Página por Página
 
-### ✅ Nível 1 — CRUD Essencial (COMPLETO)
-- [x] Entidades: Campeonato, Temporada, Time, Jogador, EstatisticaJogador
-- [x] CRUD completo (GET, POST, PUT, DELETE) para Campeonato, Temporada, Time, Jogador
-- [x] Participacao: GET, POST, DELETE
-- [x] Validações básicas (@NotBlank, @NotNull)
-- [x] DataSeeder com dados realistas (3 campeonatos, 8 times, 14 jogadores)
-- [x] GlobalExceptionHandler (404, 400, 409)
-- [x] Postman Collection com 23 endpoints e variáveis de ambiente
+| Página | Rota | Funcionalidades |
+|--------|------|-----------------|
+| **Campeonatos** | `/campeonatos` | Lista, criar, editar, excluir |
+| **Detalhe Campeonato** | `/campeonatos/:id` | Ver times, botão para gerenciar temporadas |
+| **Temporadas** | `/campeonatos/:id/temporadas` | Lista, criar, editar, excluir temporadas |
+| **Hub Temporada** | `/temporadas/:id` | 3 abas: Classificação, Partidas, Times Inscritos |
+| **Partidas** | Aba em Temporada | Criar, editar, registrar resultado, filtros |
+| **Classificação** | Aba em Temporada | Tabela automática, desempate 5 critérios |
+| **Times** | `/times` | Lista, criar, editar, excluir |
+| **Detalhe Time** | `/times/:id` | 2 abas: Elenco (jogadores por posição), Jogos |
 
-### ✅ Nível 2 — Relacionamentos e Partidas (100% COMPLETO)
-- [x] Partida: Entidade completa com todos os campos
-- [x] Enum StatusPartida (AGENDADA, EM_ANDAMENTO, FINALIZADA, ADIADA, CANCELADA)
-- [x] PartidaService com validações (mandante ≠ visitante, temporada/times válidos)
-- [x] PartidaController com CRUD completo + 6 endpoints de filtro
-- [x] Endpoint GET /partidas para listar todas as partidas
-- [x] DTOs PartidaRequestDto e PartidaResponseDto com validações
-- [x] Mapper PartidaMapper para conversão entity ↔ DTO
-- [x] Repository PartidaRepository com múltiplos métodos de busca
-- [x] DataSeeder expandido com 7+ Partidas de exemplo
-- [x] Postman Collection atualizada com endpoints de Partida
-- [x] Validação manual 100% (todos os endpoints testados)
+**Toda interface construída com Tailwind CSS:**
+- Tema: vermelho `#b91c1c` + branco
+- Animações: fade-in, hover suave, escala em clique
+- Responsivo: funciona em mobile, tablet, desktop
+- Acessível: teclado, screen reader friendly
 
-### ⏳ Nível 3 — Regras de Negócio (META MÍNIMA)
-- [ ] Registro de resultados (PUT /partidas/{id}/resultado)
-- [ ] **Cálculo automático de classificação** com 5 critérios de desempate
-- [ ] Endpoints de estatísticas + Rankings (artilharia, assistências)
-- [ ] Validações de integridade
-
-### 🔄 Nível 4 — Recursos Profissionais (STRETCH GOALS)
-- [ ] Erro padronizado (ProblemDetail)
-- [ ] Testes automatizados (ClassificacaoService, controllers)
-- [ ] Autenticação por sessão (POST /usuarios, POST /auth/login)
-- [ ] Favoritos de usuários (/usuarios/me/favoritos)
-- [ ] Paginação/ordenação/filtros avançados
-- [ ] OpenAPI/Swagger (`/swagger-ui.html`)
-- [ ] Cache (@Cacheable em classificação/artilharia)
-- [ ] Auditoria (@CreatedDate, @LastModifiedDate)
-
-## 📅 Cronograma (14 Dias)
-
-| Dia | Fase | Status | Progresso |
-|-----|------|--------|-----------|
-| 1 | Setup | ✅ 100% | Git + Config + Packages + Java 21 |
-| 2 | Nível 1 Parte A | ✅ 100% | Campeonato + Temporada |
-| 3 | Nível 1 Parte B | ✅ 100% | Time + Jogador + Participacao + Seeder + Postman |
-| 4 | CHECKPOINT 1 | ✅ 100% | Validação manual Nível 1 (todos endpoints OK) |
-| 5 | Nível 2 | ✅ 100% | Partida completa (CRUD + 6 filtros + validações) |
-| 6 | Nível 2 Polish | ✅ 100% | Endpoint GET /partidas + Postman + validação |
-| 7 | CHECKPOINT 2 | ✅ 100% | Validação manual Nível 2 (todos endpoints OK) |
-| 8 | Nível 3 Parte A | ⏳ | Classificação (🔴 ALTO RISCO) |
-| 9 | Nível 3 Parte B | ⏳ | Endpoints de Estatísticas + Rankings |
-| 10 | CHECKPOINT 3 | ⏳ | Validação Nível 3 (CONGELAMENTO) |
-| 11 | Nível 4 #1+#2 | ⏳ | Testes + Erros Padronizados |
-| 12 | Nível 4 #3 | ⏳ | Autenticação + Favoritos |
-| 13 | Buffer / Stretch | ⏳ | Paginação, Swagger, etc |
-| 14 | Polimento Final | ⏳ | Regressão, README, Push |
-
-## 📋 Documentação Completa
-
-- **[PLANO_IMPLEMENTACAO.md](Football-League-API/docs/PLANO_IMPLEMENTACAO.md)** — Plano detalhado de 14 dias com decisões arquiteturais e riscos
-- **[especificacao-football-league-api.md](Football-League-API/docs/especificacao-football-league-api.md)** — Especificação funcional completa (fonte da verdade)
-- **[SETUP_NOTES.md](SETUP_NOTES.md)** — Notas sobre issues de ambiente (SSL Maven, Java 26 → Java 21, etc)
+---
 
 ## 🐛 Troubleshooting
 
-### Maven não consegue baixar dependências (SSL Error)
-```
-sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path
-```
-**Solução**: 
-- Verificar certificados JDK (`keytool -list -v -keystore $JAVA_HOME/lib/security/cacerts`)
-- Atualizar JDK para versão com certificados atualizados
-- Ou usar proxy/VPN que confia nos certificados Maven Central
+### "Conexão recusada" na API
 
-### Postgres não inicia
+**Se rodar com Docker:**
 ```bash
 docker-compose down
 docker-compose up -d
+# Aguarde ~5s o Postgres iniciar
+./mvnw spring-boot:run
 ```
 
-### Porta 5432 já em uso
-- Docker Compose usa porta dinâmica por padrão
-- Spring Boot descobre automaticamente via `spring-boot-docker-compose`
-- Se precisar de porta fixa, editar `compose.yaml`
+**Se rodar com Supabase:**
+```powershell
+# Verifique a senha
+echo $env:DB_PASSWORD
 
-## 👨‍💻 Desenvolvedor
+# Se vazio, redefina
+$env:DB_PASSWORD = "sua_senha"
 
-**Autor**: [Seu Nome]  
+# Reinicie o backend
+Ctrl+C
+./mvnw spring-boot:run
+```
+
+### "Porta 8080 já em uso"
+
+```bash
+# Encontre quem está usando
+lsof -i :8080
+
+# Mate o processo ou use outra porta
+./mvnw spring-boot:run -Dserver.port=8081
+```
+
+### Frontend não conecta na API
+
+Verifique se o **backend está rodando** em `http://localhost:8080` e o **proxy do Vite** está ativo (rodando `npm run dev`).
+
+---
+
+## 📝 Docs do Frontend
+
+Cada tela tem documentação detalhada:
+
+- `frontend/docs/visao-geral.md` — Stack, estrutura, como rodar
+- `frontend/docs/campeonatos.md` — Endpoints, formulários, regras
+- `frontend/docs/temporadas.md` — Ciclo de vida, encerramento
+- `frontend/docs/partidas.md` — Criação, filtros, resultado
+- `frontend/docs/classificacao.md` — Desempate, MATA_MATA inválido
+- `frontend/docs/times.md` — CRUD, escudos
+- `frontend/docs/jogadores.md` — Por time, criar/editar
+
+---
+
+## ✨ Design & Animações
+
+- **Cores**: Gradientes vermelho (red-600 → red-700), sombras dinâmicas
+- **Botões**: Efeito `active:scale-95`, shadow-lg no hover, transição 200ms
+- **Cards**: Backdrop blur, hover:shadow-lg, border-red-300 ao passar o mouse
+- **Modais**: Fade-in, backdrop blur, header com gradiente
+- **Spinners**: Dupla camada de animação
+- **Inputs**: Focus ring, transição suave, disabled states
+
+---
+
+## 📚 Documentação Adicional
+
+- **[PLANO_IMPLEMENTACAO.md](backend/docs/PLANO_IMPLEMENTACAO.md)** — Decisões arquiteturais
+- **[especificacao-football-league-api.md](backend/docs/especificacao-football-league-api.md)** — Spec funcional
+- **[frontend/docs/](frontend/docs/)** — Documentação por tela
+
+---
+
+## 👨‍💻 Autor
+
+**Tavinho Silva** (TavinhoSilva06)  
 **Instituição**: FATEC-SP  
 **Disciplina**: Engenharia de Software  
-**Data**: 2026-09-21
+**Data**: 2026-10-01
+
+---
 
 ## 📄 Licença
 
 MIT License — Veja [LICENSE](LICENSE) para detalhes.
 
+---
+
 ## 🔗 Links Úteis
 
 - [Spring Boot Docs](https://spring.io/projects/spring-boot)
-- [Spring Data JPA](https://spring.io/projects/spring-data-jpa)
-- [PostgreSQL Docs](https://www.postgresql.org/docs/)
+- [React Docs](https://react.dev)
+- [Vite Docs](https://vite.dev)
+- [Tailwind CSS](https://tailwindcss.com)
+- [Supabase](https://supabase.com)
 - [Docker Compose](https://docs.docker.com/compose/)
 
 ---
 
-## 🎯 Funcionalidades Extras Implementadas (Além do Plano)
-
-Durante o Checkpoint 2, foram adicionadas funcionalidades extras para melhorar a robustez:
-
-### ✨ Novos Endpoints
-- `GET /temporadas` — Lista todas as temporadas com numRodadas
-- `GET /campeonatos/{id}/times` — Lista times de um campeonato
-- `PUT /temporadas/{id}/encerrar` — Encerra temporada quando todas rodadas são jogadas
-
-### ✨ Validações Avançadas
-- **Validação de Rodadas**: Não permite criar Partida com rodada > numRodadas
-- **Encerramento Automático**: Temporada só encerra quando TODAS rodadas forem finalizadas
-- **Tratamento de Erros**: `IllegalArgumentException` retorna HTTP 400 com mensagem customizada
-
-### ✨ Estrutura de Dados Aprimorada
-- Campo `numRodadas` em Temporada (38 para Premier League/Série A, 34 para Bundesliga)
-- DTOs (Request/Response) atualizados com numRodadas
-- DataSeeder com 110+ partidas distribuídas apropriadamente
-
-### ✨ Código Comentado
-- GlobalExceptionHandler com explicações detalhadas
-- Mappers com documentação dos fluxos de conversão
-- Services com comentários em métodos críticos
-
----
-
-**Última atualização**: 2026-09-24  
-**Status**: Em desenvolvimento (Dias 1-7 de 14 completos - 50% do projeto + Melhorias Extras)  
-**Próxima Meta**: Iniciar Nível 3 (Classificação Automática - Dia 8) 🎯
+**Última atualização**: 2026-10-01  
+**Status**: ✅ Completo (Backend + Frontend Profissional)
