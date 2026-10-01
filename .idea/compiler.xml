@@ -10,6 +10,9 @@
         <module name="Football-League-API" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="football-league" target="1.5" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
