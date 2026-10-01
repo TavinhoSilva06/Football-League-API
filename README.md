@@ -4,7 +4,7 @@ Uma **plataforma completa de gerenciamento de competições de futebol** com API
 
 ## 📋 Sobre o Projeto
 
-O **Football League API** é um projeto acadêmico desenvolvido como parte do curso de Engenharia de Software na **FATEC-SP**, com foco em aplicar padrões de arquitetura, design patterns e boas práticas de desenvolvimento full-stack.
+O **Football League API** é um projeto acadêmico desenvolvido como parte do curso de Engenharia de Software na **FATEC-PG**, com foco em aplicar padrões de arquitetura, design patterns e boas práticas de desenvolvimento full-stack.
 
 ### Funcionalidades
 
