@@ -142,4 +142,27 @@ public class TemporadaService {
 
         return mapper.toResponseDto(updated);
     }
+
+    /**
+     * Encontra a temporada atual (em andamento) de um campeonato.
+     * Se não houver nenhuma EM_ANDAMENTO, retorna a mais recente.
+     *
+     * @param campeonatoId ID do campeonato
+     * @return ID da temporada atual
+     * @throws EntityNotFoundException se não houver nenhuma temporada para o campeonato
+     */
+    public Long findTemporadaAtualByCampeonato(Long campeonatoId) {
+        List<Temporada> temporadas = repository.findByCampeonatoId(campeonatoId);
+
+        if (temporadas.isEmpty()) {
+            throw new EntityNotFoundException("Nenhuma temporada encontrada para o campeonato com id: " + campeonatoId);
+        }
+
+        // Procurar por temporada EM_ANDAMENTO
+        return temporadas.stream()
+                .filter(t -> StatusTemporada.EM_ANDAMENTO.equals(t.getStatus()))
+                .map(Temporada::getId)
+                .findFirst()
+                .orElseGet(() -> temporadas.get(temporadas.size() - 1).getId()); // Se não houver, retorna a última
+    }
 }

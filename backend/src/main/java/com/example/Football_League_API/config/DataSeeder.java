@@ -1,6 +1,7 @@
 package com.example.Football_League_API.config;
 
 import com.example.Football_League_API.entity.Campeonato;
+import com.example.Football_League_API.entity.EstatisticaJogador;
 import com.example.Football_League_API.entity.Jogador;
 import com.example.Football_League_API.entity.Participacao;
 import com.example.Football_League_API.entity.Partida;
@@ -12,6 +13,7 @@ import com.example.Football_League_API.enu.StatusPartida;
 import com.example.Football_League_API.enu.StatusTemporada;
 import com.example.Football_League_API.enu.TipoCampeonato;
 import com.example.Football_League_API.repository.CampeonatoRepository;
+import com.example.Football_League_API.repository.EstatisticaJogadorRepository;
 import com.example.Football_League_API.repository.JogadorRepository;
 import com.example.Football_League_API.repository.ParticipacaoRepository;
 import com.example.Football_League_API.repository.PartidaRepository;
@@ -35,6 +37,7 @@ public class DataSeeder implements CommandLineRunner {
     private final JogadorRepository jogadorRepository;
     private final ParticipacaoRepository participacaoRepository;
     private final PartidaRepository partidaRepository;
+    private final EstatisticaJogadorRepository estatisticaRepository;
 
     @Override
     public void run(String... args) throws Exception {
