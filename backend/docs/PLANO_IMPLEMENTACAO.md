@@ -365,94 +365,97 @@ Entidades JPA **nunca** são serializadas diretamente:
 
 ---
 
-### **Dia 8 — Nível 3, Parte A: Resultado + Classificação (ALTO RISCO, ~7-8h)** ⏳ PRÓXIMO
+### **Dia 8 — Nível 3, Parte A: Resultado + Classificação (ALTO RISCO, ~7-8h)** ✅ 75% CONCLUÍDO
 
 ⚠️ **Este é o dia de maior risco do projeto. Agendar o seu melhor horário.**
 
-**Status**: Preparado (Nível 2 100% sólido, dados de seed com partidas variadas prontos)
+**Status**: Implementação core COMPLETA, faltam testes e um endpoint
 
 **Objetivo**: Registrar resultados em partidas e calcular classificação automaticamente.
 
 **Checklist**:
-- [ ] `PartidaService.registrarResultado(id, novosMandante, novosVisitante)`:
-  - Idempotente: pode corrigir um resultado já existente
-  - Ao mudar um resultado, a classificação anterior não deve ficar duplicada (justamente por não persistir tabela)
-  - Muda status para FINALIZADA se necessário
-- [ ] Endpoint: `PUT /partidas/{id}/resultado` com body `{ placarMandante, placarVisitante }`
-- [ ] `ClassificacaoService` (arquivo de maior risco):
-  - `calcularClassificacao(temporadaId)`:
-    1. Buscar todas as `Participacao` para a temporada (garante times com 0 jogos)
-    2. Para cada `Partida` FINALIZADA da temporada:
-       - Atualizar pontos, vitórias, empates, derrotas, gols pró/contra de cada time
-    3. Aplicar `PontosCorridosTiebreakComparator`
-    4. Atribuir posição
-    5. Retornar lista de `ClassificacaoEntrada`
-  - `PontosCorridosTiebreakComparator`:
-    - Ordena por: (1) pontos DESC, (2) vitórias DESC, (3) saldo de gols DESC, (4) gols pró DESC, (5) nome time ASC
-  - `TiebreakStrategyResolver.resolve(Campeonato)`: retorna o comparator (ponto de extensão para formatos futuros)
-- [ ] Endpoints:
-  - `GET /temporadas/{id}/classificacao`
-  - `GET /campeonatos/{id}/classificacao` (resolve para temporada EM_ANDAMENTO/atual, com override `?temporadaId=`)
-  - **Documentar a decisão** de qual temporada usar quando um campeonato tem múltiplas
+- [x] `PartidaService.registrarResultado(id, novosMandante, novosVisitante)`:
+  - [x] Idempotente: pode corrigir um resultado já existente
+  - [x] Ao mudar um resultado, a classificação anterior não deve ficar duplicada (justamente por não persistir tabela)
+  - [x] Muda status para FINALIZADA se necessário
+- [x] Endpoint: `PUT /partidas/{id}/resultado` com body `{ placarMandante, placarVisitante }`
+- [x] `ClassificacaoService` (arquivo de maior risco):
+  - [x] `calcularClassificacao(temporadaId)`:
+    1. [x] Buscar todas as `Participacao` para a temporada (garante times com 0 jogos)
+    2. [x] Para cada `Partida` FINALIZADA da temporada:
+       - [x] Atualizar pontos, vitórias, empates, derrotas, gols pró/contra de cada time
+    3. [x] Aplicar `PontosCorridosTiebreakComparator`
+    4. [x] Atribuir posição
+    5. [x] Retornar lista de `ClassificacaoEntrada`
+  - [x] `PontosCorridosTiebreakComparator`:
+    - [x] Ordena por: (1) pontos DESC, (2) vitórias DESC, (3) saldo de gols DESC, (4) gols pró DESC, (5) nome time ASC
+  - [x] `TiebreakStrategyResolver.resolve(Campeonato)`: retorna o comparator (ponto de extensão para formatos futuros)
+- [x] Endpoints:
+  - [x] `GET /temporadas/{id}/classificacao`
+  - [ ] `GET /campeonatos/{id}/classificacao` (resolve para temporada EM_ANDAMENTO/atual, com override `?temporadaId=`) — **PENDENTE**
+  - [ ] **Documentar a decisão** de qual temporada usar quando um campeonato tem múltiplas — **PENDENTE**
 - [ ] Testes unitários para `ClassificacaoService` (ver Seção Testes abaixo):
-  - Tabela básica
-  - Desempate resolvido em cada um dos 5 níveis
-  - Time com 0 jogos aparece
-  - Corrigir um resultado já finalizado não duplica contagem
-- [ ] Commitar: "feat(classificacao): level 3 standings calculation"
+  - [ ] Tabela básica
+  - [ ] Desempate resolvido em cada um dos 5 níveis
+  - [ ] Time com 0 jogos aparece
+  - [ ] Corrigir um resultado já finalizado não duplica contagem
+- [x] Commits: "Adicionando lógica de classificação...", "Adicionando registro e substuição de resultados"
 
 **Riscos mitigados**:
-- Um passe único sem persistência de estado derivado
-- Testes unitários desde já
-- Isolamento da lógica de desempate
+- [x] Um passe único sem persistência de estado derivado
+- [ ] Testes unitários desde já — **FALTA**
+- [x] Isolamento da lógica de desempate
 
 ---
 
-### **Dia 9 — Nível 3, Parte B: Estatísticas (~6-7h)**
+### **Dia 9 — Nível 3, Parte B: Estatísticas (~6-7h)** ⏳ PRONTO PARA IMPLEMENTAR
 
 **Objetivo**: Estatísticas de jogadores por temporada e rankings.
 
 **Checklist**:
-- [ ] Entidade `EstatisticaJogador`:
-  - Fields: `id`, `jogador` (M:1), `temporada` (M:1), `jogos`, `gols`, `assistencias`, `cartoesAmarelos`, `cartoesVermelhos`
-  - Unique constraint: (jogador_id, temporada_id)
-- [ ] Repository, DTOs, Mapper, Service para EstatisticaJogador
-- [ ] Service: upsert (se não existe, cria; se existe, atualiza)
-- [ ] Endpoints:
-  - `PUT /jogadores/{id}/estatisticas?temporadaId=` (upsert)
-  - `GET /jogadores/{id}/estatisticas?temporadaId=`
-  - `GET /temporadas/{id}/artilharia?limit=10` (top 10 goleadores)
-  - `GET /temporadas/{id}/assistencias?limit=10` (top 10 assistentes)
+- [x] Entidade `EstatisticaJogador`:
+  - [x] Fields: `id`, `jogador` (M:1), `temporada` (M:1), `jogos`, `gols`, `assistencias`, `cartoesAmarelos`, `cartoesVermelhos`
+  - [x] Unique constraint: (jogador_id, temporada_id)
+- [x] Repository `EstatisticaJogadorRepository`
+- [ ] DTOs, Mapper, Service para EstatisticaJogador — **FALTA**
+- [ ] Service: upsert (se não existe, cria; se existe, atualiza) — **FALTA**
+- [ ] Endpoints: — **FALTA**
+  - [ ] `PUT /jogadores/{id}/estatisticas?temporadaId=` (upsert)
+  - [ ] `GET /jogadores/{id}/estatisticas?temporadaId=`
+  - [ ] `GET /temporadas/{id}/artilharia?limit=10` (top 10 goleadores)
+  - [ ] `GET /temporadas/{id}/assistencias?limit=10` (top 10 assistentes)
 - [ ] Revisar validação em todos os serviços:
-  - Chaves únicas respeitadas
-  - Campos obrigatórios presentes
-  - Consistência entre entidades relacionadas
+  - [ ] Chaves únicas respeitadas
+  - [ ] Campos obrigatórios presentes
+  - [ ] Consistência entre entidades relacionadas
 - [ ] Expandir seeder com estatísticas
 - [ ] Commitar: "feat(estatistica): level 3 player stats and rankings"
 
 ---
 
-### **Dia 10 — CHECKPOINT 3 / CONGELAMENTO DO NÍVEL 3 (~6h)**
+### **Dia 10 — CHECKPOINT 3 / CONGELAMENTO DO NÍVEL 3 (~6h)** ⏳ PRÓXIMO (após Dia 9)
 
 **Objetivo**: Validação end-to-end e marcação do ponto seguro de parada.
 
+**Status**: Bloqueado até completar Dia 9 (estatísticas)
+
 **Checklist**:
 - [ ] Regressão manual **completa** ponta a ponta:
-  1. Criar campeonato
-  2. Criar temporada
-  3. Criar times
-  4. Adicionar participações
-  5. Criar partidas
-  6. Registrar resultados
-  7. Verificar classificação ordenada corretamente
-  8. Verificar rankings de artilharia/assistências
+  1. [ ] Criar campeonato
+  2. [ ] Criar temporada
+  3. [ ] Criar times
+  4. [ ] Adicionar participações
+  5. [ ] Criar partidas
+  6. [ ] Registrar resultados
+  7. [ ] Verificar classificação ordenada corretamente
+  8. [ ] Verificar rankings de artilharia/assistências
 - [ ] Salvar conjunto de requests manual em arquivo `requests.http` (ou Postman collection) para repetibilidade
 - [ ] Começar testes automatizados se houver tempo (pode escorregar para Dia 11)
 - [ ] **Commit marco**: "Nível 3 complete and stable"
 - [ ] Push para origin/main
 - [ ] ⚠️ **Este é o ponto de parada seguro**: se o cronograma apertar agora, o Nível 3 já satisfaz a entrega mínima.
 
-**Saída**:
+**Saída esperada**:
 - Nível 3 100% funcional e validado
 - Projeto tem valor real (CRUD + negócio funcionando)
 - Histórico git limpo e meaningful
@@ -460,23 +463,23 @@ Entidades JPA **nunca** são serializadas diretamente:
 
 ---
 
-### **Dia 11 — Stretch #1+#2: Erros Padronizados + Testes (~6-7h)**
+### **Dia 11 — Stretch #1+#2: Erros Padronizados + Testes (~6-7h)** ⏳ NÃO INICIADO
 
 **Objetivo**: Melhorar robustez com tratamento de erro consistente e automação de testes.
 
 **Checklist**:
 - [ ] Evoluir `GlobalExceptionHandler`:
-  - Formato `ProblemDetail` padronizado: `{ timestamp, status, message, path, errors: [...] }`
-  - Erros por campo para validação
-  - Aplicar a todas as exceções da API
+  - [ ] Formato `ProblemDetail` padronizado: `{ timestamp, status, message, path, errors: [...] }`
+  - [ ] Erros por campo para validação
+  - [ ] Aplicar a todas as exceções da API
 - [ ] Completar Bean Validation annotations em **todos** os DTOs de request:
-  - `@NotNull`, `@NotBlank`, `@Size`, `@Pattern`, etc
-  - Custom validators para regras cross-field (ex: dataInicio < dataFim)
+  - [ ] `@NotNull`, `@NotBlank`, `@Size`, `@Pattern`, etc
+  - [ ] Custom validators para regras cross-field (ex: dataInicio < dataFim)
 - [ ] Suite de testes automatizados:
-  - **Priority 1**: `ClassificacaoServiceTest` (5 critérios de desempate + no-double-count)
-  - **Priority 2**: `PartidaServiceTest` (validações: mandante!=visitante, time fora temporada, etc)
-  - **Priority 3**: `ParticipacaoServiceTest` (unique constraint)
-  - **Priority 4**: 2-3 `@WebMvcTest` para `CampeonatoController` e `PartidaController` (happy path + 404/400)
+  - [ ] **Priority 1**: `ClassificacaoServiceTest` (5 critérios de desempate + no-double-count)
+  - [ ] **Priority 2**: `PartidaServiceTest` (validações: mandante!=visitante, time fora temporada, etc)
+  - [ ] **Priority 3**: `ParticipacaoServiceTest` (unique constraint)
+  - [ ] **Priority 4**: 2-3 `@WebMvcTest` para `CampeonatoController` e `PartidaController` (happy path + 404/400)
 - [ ] Rodar `./mvnw test` verde
 - [ ] Commitar: "refactor(errors, tests): standardized error format and unit tests"
 
@@ -484,38 +487,38 @@ Entidades JPA **nunca** são serializadas diretamente:
 
 ---
 
-### **Dia 12 — Stretch #3: Autenticação por Sessão + Favoritos (SEGUNDO MAIOR RISCO, ~7-8h)**
+### **Dia 12 — Stretch #3: Autenticação por Sessão + Favoritos (SEGUNDO MAIOR RISCO, ~7-8h)** ⏳ NÃO INICIADO
 
 ⚠️ **Nível 4 começa aqui. Branch `feature/auth-favoritos` a partir daqui.**
 
 **Checklist**:
 - [ ] **Entidade `Usuario`**:
-  - Fields: `id`, `nome`, `email` (unique, not null), `senhaHash`, `papel` (enum ADMIN/USUARIO), `criadoEm`
+  - [ ] Fields: `id`, `nome`, `email` (unique, not null), `senhaHash`, `papel` (enum ADMIN/USUARIO), `criadoEm`
 - [ ] **Spring Security config**:
-  - `SecurityConfig` com `BCryptPasswordEncoder`
-  - `UserDetailsService` buscando `Usuario` do banco
-  - GET endpoints públicos; POST/PUT/DELETE restritos a ADMIN (em `@PreAuthorize`)
-  - `/usuarios/me/**` requer autenticação
+  - [ ] `SecurityConfig` com `BCryptPasswordEncoder`
+  - [ ] `UserDetailsService` buscando `Usuario` do banco
+  - [ ] GET endpoints públicos; POST/PUT/DELETE restritos a ADMIN (em `@PreAuthorize`)
+  - [ ] `/usuarios/me/**` requer autenticação
 - [ ] **Endpoints de autenticação**:
-  - `POST /usuarios` (sign up, hash de senha)
-  - `POST /auth/login` (valida usuário+senha, cria sessão)
+  - [ ] `POST /usuarios` (sign up, hash de senha)
+  - [ ] `POST /auth/login` (valida usuário+senha, cria sessão)
 - [ ] **Entidade `Favorito`**:
-  - Fields: `id`, `usuario` (M:1), `tipo` (enum CAMPEONATO/TIME/JOGADOR), `campeonatoId`/`timeId`/`jogadorId` (nullable, validar que exatamente um é setado)
-  - Unique constraint: (usuario_id, tipo, campeonatoId/timeId/jogadorId) conforme aplicável
+  - [ ] Fields: `id`, `usuario` (M:1), `tipo` (enum CAMPEONATO/TIME/JOGADOR), `campeonatoId`/`timeId`/`jogadorId` (nullable, validar que exatamente um é setado)
+  - [ ] Unique constraint: (usuario_id, tipo, campeonatoId/timeId/jogadorId) conforme aplicável
 - [ ] **Endpoints de favoritos**:
-  - `GET /usuarios/me/favoritos` (lista favoritos do usuário autenticado)
-  - `POST /usuarios/me/favoritos` (adiciona favorito)
-  - `DELETE /usuarios/me/favoritos/{favoritoId}` (remove favorito)
+  - [ ] `GET /usuarios/me/favoritos` (lista favoritos do usuário autenticado)
+  - [ ] `POST /usuarios/me/favoritos` (adiciona favorito)
+  - [ ] `DELETE /usuarios/me/favoritos/{favoritoId}` (remove favorito)
 - [ ] ⚠️ **ATENÇÃO EXPLÍCITA**: `spring-session-jdbc` cria tabelas `SPRING_SESSION*` que **não** são gerenciadas pelo Hibernate.
-  - Configurar `spring.session.jdbc.initialize-schema=always` em `application.properties`
-  - Senão: login dá 500 silenciosamente
+  - [ ] Configurar `spring.session.jdbc.initialize-schema=always` em `application.properties`
+  - [ ] Senão: login dá 500 silenciosamente
 - [ ] Testar manualmente com cliente que preserve cookies (Postman, curl com `-b/-c`)
 - [ ] Só fazer merge para `main` **após validação manual com sucesso**
 - [ ] Commitar no merge: "feat(auth,favoritos): level 4 session-based auth and user favorites"
 
 ---
 
-### **Dia 13 — Buffer / Recuperação (flexível, 4-8h)**
+### **Dia 13 — Buffer / Recuperação (flexível, 4-8h)** ⏳ NÃO INICIADO
 
 **Objetivo**: Absorver atrasos e atacar próximos stretch items.
 
@@ -524,52 +527,52 @@ Entidades JPA **nunca** são serializadas diretamente:
 2. **Se no prazo**, atacar restante do stretch na ordem de prioridade:
 
    **#4 — Paginação / Ordenação / Filtros** (~2-3h):
-   - Converter endpoints de listagem para `Pageable`
-   - `GET /campeonatos?page=0&size=20&sort=nome,asc`
-   - Aplicar a Campeonatos, Times, Jogadores, Partidas
-   - Commitar: "feat(pagination): add page/size/sort to list endpoints"
+   - [ ] Converter endpoints de listagem para `Pageable`
+   - [ ] `GET /campeonatos?page=0&size=20&sort=nome,asc`
+   - [ ] Aplicar a Campeonatos, Times, Jogadores, Partidas
+   - [ ] Commitar: "feat(pagination): add page/size/sort to list endpoints"
 
    **#5 — OpenAPI / Swagger** (~1.5-2h):
-   - Adicionar `springdoc-openapi` (verificar compatibilidade com parent 4.2.0-SNAPSHOT; se não existir, cortar em 30min)
-   - `@Operation`, `@Parameter`, `@Schema` nas classes + endpoints
-   - `/swagger-ui.html` acessível
-   - Commitar: "docs(swagger): add openapi documentation"
+   - [ ] Adicionar `springdoc-openapi` (verificar compatibilidade com parent 4.2.0-SNAPSHOT; se não existir, cortar em 30min)
+   - [ ] `@Operation`, `@Parameter`, `@Schema` nas classes + endpoints
+   - [ ] `/swagger-ui.html` acessível
+   - [ ] Commitar: "docs(swagger): add openapi documentation"
 
 3. **Se ainda sobrar tempo**, cada item em commit próprio.
 
 ---
 
-### **Dia 14 — Polimento Final (~5-6h)**
+### **Dia 14 — Polimento Final (~5-6h)** ⏳ NÃO INICIADO
 
 **Objetivo**: Regressão completa, documentação e cleanup.
 
 **Checklist**:
 - [ ] Regressão manual **100%**:
-  - Todos os endpoints Nível 3 + qualquer Nível 4 implementado
-  - Edge cases e validações
-  - Delete cascading behavior
+  - [ ] Todos os endpoints Nível 3 + qualquer Nível 4 implementado
+  - [ ] Edge cases e validações
+  - [ ] Delete cascading behavior
 - [ ] Escrever README.md:
-  - Como rodar o projeto (`./mvnw spring-boot:run`, compose auto-starts Postgres)
-  - Modelo de entidades (diagrama ER ou listing)
-  - Lista de endpoints por recurso
-  - Checklist explícito: "Níveis 1-3 ✅, Nível 4 → #1+#2 ✅ | #3 ✅ | #4 ❌ | #5 ✅ | #6 ❌ | #7 ❌"
-  - Notas de configuração e troubleshooting
+  - [ ] Como rodar o projeto (`./mvnw spring-boot:run`, compose auto-starts Postgres)
+  - [ ] Modelo de entidades (diagrama ER ou listing)
+  - [ ] Lista de endpoints por recurso
+  - [ ] Checklist explícito: "Níveis 1-3 ✅, Nível 4 → #1+#2 ✅ | #3 ✅ | #4 ❌ | #5 ✅ | #6 ❌ | #7 ❌"
+  - [ ] Notas de configuração e troubleshooting
 - [ ] Cleanup:
-  - Remover código morto, TODOs não-relacionados
-  - Validar que nenhum segredo (senha, token, chave) está commitado
-  - Confirmar seeder é restrito ao perfil `dev` (`@Profile("dev")`)
+  - [ ] Remover código morto, TODOs não-relacionados
+  - [ ] Validar que nenhum segredo (senha, token, chave) está commitado
+  - [ ] Confirmar seeder é restrito ao perfil `dev` (`@Profile("dev")`)
 - [ ] **Se sobrar tempo**, atacar Nível 4 restante (em ordem):
 
    **#6 — Cache** (~1.5h):
-   - `@Cacheable` em `classificacao`, `artilharia`, `assistencias`
-   - `@CacheEvict` em `registrarResultado`, `upsertEstatistica`
-   - `ConcurrentMapCacheManager` simples (sem Redis)
-   - Commitar: "perf(cache): add caching for hot queries"
+   - [ ] `@Cacheable` em `classificacao`, `artilharia`, `assistencias`
+   - [ ] `@CacheEvict` em `registrarResultado`, `upsertEstatistica`
+   - [ ] `ConcurrentMapCacheManager` simples (sem Redis)
+   - [ ] Commitar: "perf(cache): add caching for hot queries"
 
    **#7 — Auditoria** (❌ **não tente** a menos que tudo esteja pronto com horas sobrando):
-   - Mínimo: `@CreatedDate`, `@LastModifiedDate` via Spring Data auditing
-   - Não: full change-log table
-   - Muito baixa prioridade
+   - [ ] Mínimo: `@CreatedDate`, `@LastModifiedDate` via Spring Data auditing
+   - [ ] Não: full change-log table
+   - [ ] Muito baixa prioridade
 
 - [ ] `./mvnw test` verde (se testes implementados)
 - [ ] Final commit: "chore: final cleanup and documentation"
@@ -630,24 +633,30 @@ CRUD simples de Campeonato/Time/Jogador/Temporada — melhor coberto por `.http`
 
 ---
 
-## ✅ Definição de Pronto
+## ✅ Definição de Pronto (Status Atual)
 
-### **Nível 3 (Entrega Mínima — Obrigatório)**
+### **Nível 3 (Entrega Mínima — Obrigatório)** — **75% COMPLETO**
 
 - ✅ 7 entidades centrais (Campeonato, Temporada, Time, Jogador, Participacao, Partida, EstatisticaJogador) com relacionamentos e constraints corretos
 - ✅ CRUD completo: Campeonato, Temporada, Time, Jogador
 - ✅ Criação + listagem: Participacao
 - ✅ Criação + listagem + resultado: Partida
-- ✅ Endpoints de classificação (`GET /temporadas/{id}/classificacao`, `GET /campeonatos/{id}/classificacao`) corretos e ordenados por desempate
-- ✅ Classificação **apenas de partidas FINALIZADA**, sem duplicação ao corrigir resultado (validado por testes + manual)
-- ✅ Upsert de EstatisticaJogador + endpoints de artilharia/assistências
+- ✅ Endpoint de classificação `GET /temporadas/{id}/classificacao` correto e ordenado por desempate
+- ⚠️ Falta: `GET /campeonatos/{id}/classificacao`
+- ✅ Classificação **apenas de partidas FINALIZADA**, sem duplicação ao corrigir resultado
+- ⚠️ **Falta**: Upsert de EstatisticaJogador + endpoints de artilharia/assistências (Entidade criada, endpoints pendentes)
 - ✅ **DTOs em toda a API** (sem vazamento de entidade)
 - ✅ Erros 404/409/400 consistentes
 - ✅ App sobe via `./mvnw spring-boot:run` com Postgres automático e dados de seed
 - ✅ Histórico git incremental + commits meaningful
-- ✅ README documenta o que foi implementado
+- ⚠️ README precisa ser atualizado com progresso atual
 
-**Go/No-go**: Checkout Dia 10, ponto de parada seguro.
+**Pronto para**: Dia 10 (checkpoint) após completar Dia 9 (estatísticas)
+
+### **O QUE FALTA PARA NÍVEL 3 100%:**
+1. ✅ **Dia 9** — Endpoints de EstatisticaJogador (artilharia, assistências, upsert)
+2. ✅ **Dia 8** — Testes para ClassificacaoService + Endpoint `/campeonatos/{id}/classificacao`
+3. ✅ **Dia 10** — Validação manual ponta-a-ponta
 
 ### **Nível 4 (Stretch Goals — Tentado Após Nível 3, Prioridade)**
 

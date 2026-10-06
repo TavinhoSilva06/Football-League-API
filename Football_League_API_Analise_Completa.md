@@ -1,10 +1,12 @@
 # ANÁLISE TÉCNICA DO PROJETO
 ## Football League API
 
+**Autor:** Otávio Augusto Amaral Silva
 **Versão:** 1.0  
 **Data:** Outubro/2026  
 **Escopo:** Visão Completa do Sistema (Full Project)  
 **Status:** Análise Completa
+**Github:** https://github.com/TavinhoSilva06/Football-League-API
 
 ---
 
