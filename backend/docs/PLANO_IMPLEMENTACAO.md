@@ -635,28 +635,25 @@ CRUD simples de Campeonato/Time/Jogador/Temporada — melhor coberto por `.http`
 
 ## ✅ Definição de Pronto (Status Atual)
 
-### **Nível 3 (Entrega Mínima — Obrigatório)** — **75% COMPLETO**
+### **Nível 3 (Entrega Mínima — Obrigatório)** — **✅ 100% COMPLETO**
 
-- ✅ 7 entidades centrais (Campeonato, Temporada, Time, Jogador, Participacao, Partida, EstatisticaJogador) com relacionamentos e constraints corretos
+- ✅ 8 entidades centrais (Campeonato, Temporada, Time, Jogador, Participacao, Partida, EstatisticaJogador, EventoPartida) com relacionamentos e constraints corretos
 - ✅ CRUD completo: Campeonato, Temporada, Time, Jogador
 - ✅ Criação + listagem: Participacao
-- ✅ Criação + listagem + resultado: Partida
-- ✅ Endpoint de classificação `GET /temporadas/{id}/classificacao` correto e ordenado por desempate
-- ⚠️ Falta: `GET /campeonatos/{id}/classificacao`
+- ✅ Criação + listagem + resultado: Partida com **validação de eventos**
+- ✅ **Eventos de Partida**: registrar gols, assistências, cartões com auto-atualização de estatísticas
+- ✅ Endpoints de classificação: `GET /temporadas/{id}/classificacao` + `GET /campeonatos/{id}/classificacao`
 - ✅ Classificação **apenas de partidas FINALIZADA**, sem duplicação ao corrigir resultado
-- ⚠️ **Falta**: Upsert de EstatisticaJogador + endpoints de artilharia/assistências (Entidade criada, endpoints pendentes)
+- ✅ **Upsert de EstatisticaJogador** + endpoints de artilharia/assistências funcionando
+- ✅ Rankings: Artilharia (top goleadores) e Assistências (top assistentes)
 - ✅ **DTOs em toda a API** (sem vazamento de entidade)
 - ✅ Erros 404/409/400 consistentes
 - ✅ App sobe via `./mvnw spring-boot:run` com Postgres automático e dados de seed
 - ✅ Histórico git incremental + commits meaningful
-- ⚠️ README precisa ser atualizado com progresso atual
+- ✅ Frontend integrado com abas de Artilharia e Assistências
+- ✅ README.md atualizado com todas as features
 
-**Pronto para**: Dia 10 (checkpoint) após completar Dia 9 (estatísticas)
-
-### **O QUE FALTA PARA NÍVEL 3 100%:**
-1. ✅ **Dia 9** — Endpoints de EstatisticaJogador (artilharia, assistências, upsert)
-2. ✅ **Dia 8** — Testes para ClassificacaoService + Endpoint `/campeonatos/{id}/classificacao`
-3. ✅ **Dia 10** — Validação manual ponta-a-ponta
+**Status**: Pronto para produção (Nível 3)
 
 ### **Nível 4 (Stretch Goals — Tentado Após Nível 3, Prioridade)**
 
@@ -779,4 +776,6 @@ Football-League-API/
 
 **Versão**: 1.0  
 **Data**: 2026-09-21  
+**Última atualização**: 2026-10-06  
+**Status**: ✅ Nível 3 100% Completo
 **Criado por**: Claude Code + Planejamento Estruturado

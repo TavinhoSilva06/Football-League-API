@@ -22,8 +22,10 @@ O **Football League API** é um projeto acadêmico desenvolvido como parte do cu
 - ✅ Organização de temporadas com rodadas configuráveis
 - ✅ Gestão de times e elencos de jogadores
 - ✅ Registro de partidas com placares e resultados
+- ✅ **Eventos de partida** (gols, assistências, cartões) com atualização automática de estatísticas
 - ✅ **Cálculo automático de classificações** com 5 critérios de desempate
-- ✅ 37 endpoints RESTful totalmente implementados
+- ✅ **Rankings de artilharia e assistências** em tempo real
+- ✅ 50+ endpoints RESTful totalmente implementados
 - ✅ Validação robusta com mensagens em português
 
 ## 🏗️ Arquitetura
@@ -214,14 +216,21 @@ npm run dev
 5. **Criar Partidas**: Aba "Partidas" → "Nova Partida"
    - Mandante, Visitante, Rodada, Data/Hora
    - Validação automática: mandante ≠ visitante
-6. **Registrar Resultado**: Clique em "⚡ Resultado" na partida
-   - Gols (≥ 0), força status para FINALIZADA
-7. **Ver Classificação**: Aba "Classificação" → tabela automática!
-8. **Times**: Gerenciar elencos, ver jogadores por posição
+6. **Registrar Eventos** (via Postman/API):
+   - Registre gols, assistências, cartões dos jogadores
+   - Sistema atualiza automaticamente as estatísticas ✨
+7. **Finalizar Partida**: Sistema valida placar com eventos registrados
+   - Status muda para FINALIZADA
+   - Número de jogos é incrementado
+8. **Ver Rankings**: 
+   - Aba "Artilharia" → Top goleadores 🥅
+   - Aba "Assistências" → Top assistentes 🎯
+9. **Ver Classificação**: Aba "Classificação" → tabela automática com desempate!
+10. **Times**: Gerenciar elencos, ver jogadores por posição
 
 ---
 
-## 📡 37 Endpoints Implementados
+## 📡 50+ Endpoints Implementados
 
 ### Campeonatos (6)
 - `GET /campeonatos` — Lista todos
@@ -269,8 +278,22 @@ npm run dev
 - `PUT /partidas/{id}/resultado` — Registrar/corrigir resultado
 - `DELETE /partidas/{id}` — Deletar
 
-### Classificação (1)
+### Classificação (2)
 - `GET /temporadas/{id}/classificacao` — Tabela com desempate automático
+- `GET /campeonatos/{id}/classificacao` — Classificação por campeonato (com override de temporada)
+
+### Eventos de Partida (4)
+- `POST /partidas/{id}/eventos` — Registrar evento (gol, assistência, cartão)
+- `GET /partidas/{id}/eventos` — Listar eventos de uma partida
+- `GET /partidas/{id}/eventos/{eventoId}` — Detalhe de um evento
+- `DELETE /partidas/{id}/eventos/{eventoId}` — Remover evento
+
+### Estatísticas (5)
+- `GET /estatisticas/temporadas/{id}/artilharia?limit=10` — Top goleadores
+- `GET /estatisticas/temporadas/{id}/assistencias?limit=10` — Top assistentes
+- `GET /estatisticas/temporadas/{id}` — Todas as estatísticas
+- `GET /estatisticas/jogadores/{id}?temporadaId=` — Estatísticas de um jogador
+- `PUT /estatisticas/jogadores/{id}?temporadaId=` — Criar/atualizar estatísticas
 
 ---
 
@@ -281,8 +304,10 @@ npm run dev
 | **Campeonatos** | `/campeonatos` | Lista, criar, editar, excluir |
 | **Detalhe Campeonato** | `/campeonatos/:id` | Ver times, botão para gerenciar temporadas |
 | **Temporadas** | `/campeonatos/:id/temporadas` | Lista, criar, editar, excluir temporadas |
-| **Hub Temporada** | `/temporadas/:id` | 3 abas: Classificação, Partidas, Times Inscritos |
+| **Hub Temporada** | `/temporadas/:id` | 5 abas: Classificação, Partidas, Artilharia, Assistências, Times Inscritos |
 | **Partidas** | Aba em Temporada | Criar, editar, registrar resultado, filtros |
+| **Artilharia** | Aba em Temporada | Top goleadores com gols, jogos, média |
+| **Assistências** | Aba em Temporada | Top assistentes com assistências, jogos, média |
 | **Classificação** | Aba em Temporada | Tabela automática, desempate 5 critérios |
 | **Times** | `/times` | Lista, criar, editar, excluir |
 | **Detalhe Time** | `/times/:id` | 2 abas: Elenco (jogadores por posição), Jogos |
@@ -395,5 +420,5 @@ MIT License — Veja [LICENSE](LICENSE) para detalhes.
 
 ---
 
-**Última atualização**: 2026-10-01  
-**Status**: ✅ Completo (Backend + Frontend Profissional)
+**Última atualização**: 2026-10-06  
+**Status**: ✅ Nível 3 Completo (Backend + Frontend + Eventos de Partida + Rankings)

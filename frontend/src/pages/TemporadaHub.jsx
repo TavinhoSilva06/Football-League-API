@@ -8,6 +8,9 @@ import { STATUS_TEMPORADA, statusTemporadaOptions } from '../lib/enums'
 import { ParticipacoesPage } from './ParticipacoesPage'
 import { PartidasPage } from './PartidasPage'
 import { ClassificacaoPage } from './ClassificacaoPage'
+import { ArtilhariaPage } from './ArtilhariaPage'
+import { AssistenciasPage } from './AssistenciasPage'
+import { CartõesPage } from './CartõesPage'
 
 export function TemporadaHub() {
   const { id } = useParams()
@@ -70,6 +73,9 @@ export function TemporadaHub() {
               tabs={[
                 { label: 'Classificação', value: 'classificacao' },
                 { label: 'Partidas', value: 'partidas' },
+                { label: 'Artilharia', value: 'artilharia' },
+                { label: 'Assistências', value: 'assistencias' },
+                { label: 'Cartões', value: 'cartoes' },
                 { label: 'Times Inscritos', value: 'times' },
               ]}
               value={tab}
@@ -78,6 +84,9 @@ export function TemporadaHub() {
 
             {tab === 'classificacao' && <ClassificacaoPage temporadaId={id} />}
             {tab === 'partidas' && <PartidasPage temporadaId={id} />}
+            {tab === 'artilharia' && <ArtilhariaPage temporadaId={id} />}
+            {tab === 'assistencias' && <AssistenciasPage temporadaId={id} />}
+            {tab === 'cartoes' && <CartõesPage temporadaId={id} />}
             {tab === 'times' && <ParticipacoesPage temporadaId={id} />}
 
             {showEdit && (

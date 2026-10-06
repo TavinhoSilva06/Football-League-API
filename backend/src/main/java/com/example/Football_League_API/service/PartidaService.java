@@ -3,12 +3,16 @@ package com.example.Football_League_API.service;
 import com.example.Football_League_API.dto.request.PartidaRequestDto;
 import com.example.Football_League_API.dto.request.ResultadoRequestDto;
 import com.example.Football_League_API.dto.response.PartidaResponseDto;
+import com.example.Football_League_API.entity.EventoPartida;
 import com.example.Football_League_API.entity.Partida;
 import com.example.Football_League_API.entity.Temporada;
 import com.example.Football_League_API.entity.Time;
 import com.example.Football_League_API.enu.StatusPartida;
+import com.example.Football_League_API.enu.TipoEvento;
 import com.example.Football_League_API.exception.EntityNotFoundException;
 import com.example.Football_League_API.mapper.PartidaMapper;
+import com.example.Football_League_API.repository.EstatisticaJogadorRepository;
+import com.example.Football_League_API.repository.EventoPartidaRepository;
 import com.example.Football_League_API.repository.PartidaRepository;
 import com.example.Football_League_API.repository.TemporadaRepository;
 import com.example.Football_League_API.repository.TimeRepository;
@@ -26,6 +30,8 @@ public class PartidaService {
     private final PartidaMapper mapper;
     private final TemporadaRepository temporadaRepository;
     private final TimeRepository timeRepository;
+    private final EventoPartidaRepository eventoRepository;
+    private final EstatisticaJogadorRepository estatisticaRepository;
 
     public PartidaResponseDto create(Long temporadaId, PartidaRequestDto dto) {
         validatePartidaCreation(temporadaId, dto);
@@ -195,12 +201,60 @@ public class PartidaService {
         Partida partida = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Partida não encontrada com ID: " + id));
 
-        partida.setGolsMandante(dto.getGolsMandante());
-        partida.setGolsVisitante(dto.getGolsVisitante());
+        // Buscar todos os eventos de golo registrados para esta partida
+        List<EventoPartida> eventos = eventoRepository.findByPartidaId(id);
+
+        int golosMandanteEvento = (int) eventos.stream()
+                .filter(e -> e.getTipo() == TipoEvento.GOLO &&
+                        e.getJogador().getTime().getId().equals(partida.getTimeMandante().getId()))
+                .count();
+
+        int golosVisitanteEvento = (int) eventos.stream()
+                .filter(e -> e.getTipo() == TipoEvento.GOLO &&
+                        e.getJogador().getTime().getId().equals(partida.getTimeVisitante().getId()))
+                .count();
+
+        // Validar se o placar informado bate com os eventos registrados
+        if (dto.getGolsMandante() != null && !dto.getGolsMandante().equals(golosMandanteEvento)) {
+            throw new IllegalArgumentException(
+                "Placar do mandante (" + dto.getGolsMandante() + ") não corresponde aos eventos registrados (" + golosMandanteEvento + " gols)"
+            );
+        }
+
+        if (dto.getGolsVisitante() != null && !dto.getGolsVisitante().equals(golosVisitanteEvento)) {
+            throw new IllegalArgumentException(
+                "Placar do visitante (" + dto.getGolsVisitante() + ") não corresponde aos eventos registrados (" + golosVisitanteEvento + " gols)"
+            );
+        }
+
+        // Atualizar com os gols dos eventos (ou valores informados se validarem)
+        partida.setGolsMandante(dto.getGolsMandante() != null ? dto.getGolsMandante() : golosMandanteEvento);
+        partida.setGolsVisitante(dto.getGolsVisitante() != null ? dto.getGolsVisitante() : golosVisitanteEvento);
         partida.setStatus(StatusPartida.FINALIZADA);
 
         Partida updated = repository.save(partida);
+
+        // Incrementar número de jogos para todos os jogadores que participaram
+        atualizarNumeroJogos(partida, eventos);
+
         return mapper.toResponseDto(updated);
+    }
+
+    private void atualizarNumeroJogos(Partida partida, List<EventoPartida> eventos) {
+        // Obter todos os jogadores únicos que participaram (tiveram eventos)
+        eventos.stream()
+                .map(EventoPartida::getJogador)
+                .distinct()
+                .forEach(jogador -> {
+                    var stats = estatisticaRepository
+                            .findByJogadorIdAndTemporadaId(jogador.getId(), partida.getTemporada().getId())
+                            .orElse(null);
+
+                    if (stats != null) {
+                        stats.setJogos(stats.getJogos() + 1);
+                        estatisticaRepository.save(stats);
+                    }
+                });
     }
 
     protected Partida findByIdEntity(Long id) {
