@@ -222,9 +222,10 @@ npm run dev
 7. **Finalizar Partida**: Sistema valida placar com eventos registrados
    - Status muda para FINALIZADA
    - Número de jogos é incrementado
-8. **Ver Rankings**: 
-   - Aba "Artilharia" → Top goleadores 🥅
-   - Aba "Assistências" → Top assistentes 🎯
+8. **Ver Rankings e Estatísticas**: 
+   - Aba "Artilharia" → Top goleadores (apenas com gols) 🥅
+   - Aba "Assistências" → Top assistentes (apenas com assistências) 🎯
+   - Aba "Cartões" → Jogadores com cartões (amarelos + vermelhos) 🟨🟥
 9. **Ver Classificação**: Aba "Classificação" → tabela automática com desempate!
 10. **Times**: Gerenciar elencos, ver jogadores por posição
 
@@ -304,10 +305,11 @@ npm run dev
 | **Campeonatos** | `/campeonatos` | Lista, criar, editar, excluir |
 | **Detalhe Campeonato** | `/campeonatos/:id` | Ver times, botão para gerenciar temporadas |
 | **Temporadas** | `/campeonatos/:id/temporadas` | Lista, criar, editar, excluir temporadas |
-| **Hub Temporada** | `/temporadas/:id` | 5 abas: Classificação, Partidas, Artilharia, Assistências, Times Inscritos |
+| **Hub Temporada** | `/temporadas/:id` | 6 abas: Classificação, Partidas, Artilharia, Assistências, Cartões, Times Inscritos |
 | **Partidas** | Aba em Temporada | Criar, editar, registrar resultado, filtros |
-| **Artilharia** | Aba em Temporada | Top goleadores com gols, jogos, média |
-| **Assistências** | Aba em Temporada | Top assistentes com assistências, jogos, média |
+| **Artilharia** | Aba em Temporada | Top goleadores (apenas com gols > 0): gols, jogos, média |
+| **Assistências** | Aba em Temporada | Top assistentes (apenas com asst > 0): assistências, jogos, média |
+| **Cartões** | Aba em Temporada | Jogadores com cartões (apenas com cartões > 0): amarelos, vermelhos, total |
 | **Classificação** | Aba em Temporada | Tabela automática, desempate 5 critérios |
 | **Times** | `/times` | Lista, criar, editar, excluir |
 | **Detalhe Time** | `/times/:id` | 2 abas: Elenco (jogadores por posição), Jogos |
@@ -420,5 +422,5 @@ MIT License — Veja [LICENSE](LICENSE) para detalhes.
 
 ---
 
-**Última atualização**: 2026-10-06  
-**Status**: ✅ Nível 3 Completo (Backend + Frontend + Eventos de Partida + Rankings)
+**Última atualização**: 2026-10-06 (Versão Final)  
+**Status**: ✅ Nível 3 100% Completo (Backend + Frontend Profissional + Eventos + Rankings + Cartões)

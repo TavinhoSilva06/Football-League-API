@@ -646,14 +646,16 @@ CRUD simples de Campeonato/Time/Jogador/Temporada — melhor coberto por `.http`
 - ✅ Classificação **apenas de partidas FINALIZADA**, sem duplicação ao corrigir resultado
 - ✅ **Upsert de EstatisticaJogador** + endpoints de artilharia/assistências funcionando
 - ✅ Rankings: Artilharia (top goleadores) e Assistências (top assistentes)
+- ✅ Aba de Cartões mostrando amarelos + vermelhos
+- ✅ **Filtragem inteligente**: cada aba mostra apenas dados correspondentes (ex: Artilharia mostra apenas jogadores com gols > 0)
 - ✅ **DTOs em toda a API** (sem vazamento de entidade)
 - ✅ Erros 404/409/400 consistentes
 - ✅ App sobe via `./mvnw spring-boot:run` com Postgres automático e dados de seed
 - ✅ Histórico git incremental + commits meaningful
-- ✅ Frontend integrado com abas de Artilharia e Assistências
+- ✅ Frontend com **6 abas**: Classificação, Partidas, Artilharia, Assistências, Cartões, Times Inscritos
 - ✅ README.md atualizado com todas as features
 
-**Status**: Pronto para produção (Nível 3)
+**Status**: Pronto para produção (Nível 3) ✨
 
 ### **Nível 4 (Stretch Goals — Tentado Após Nível 3, Prioridade)**
 
