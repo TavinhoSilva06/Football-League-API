@@ -33,6 +33,10 @@ public class Campeonato {
     @Column(nullable = false)
     private String nome;
 
+    // Id da liga na API-Football, usado para identificar o campeonato na sincronização
+    @Column(name = "api_id", unique = true)
+    private Integer apiId;
+
     @Column
     private String pais;
 
