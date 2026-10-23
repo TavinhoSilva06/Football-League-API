@@ -1,6 +1,7 @@
 package com.example.Football_League_API.external.service;
 
 import com.example.Football_League_API.entity.Campeonato;
+import com.example.Football_League_API.entity.Jogador;
 import com.example.Football_League_API.entity.SincronizacaoLog;
 import com.example.Football_League_API.entity.Temporada;
 import com.example.Football_League_API.entity.Time;
@@ -9,11 +10,13 @@ import com.example.Football_League_API.enu.StatusTemporada;
 import com.example.Football_League_API.enu.TipoCampeonato;
 import com.example.Football_League_API.external.client.FootballApiClient;
 import com.example.Football_League_API.external.dto.FootballApiCompetitionDto;
+import com.example.Football_League_API.external.dto.FootballApiPlayerDto;
 import com.example.Football_League_API.external.dto.FootballApiSeasonDto;
 import com.example.Football_League_API.external.dto.FootballApiTeamDto;
 import com.example.Football_League_API.external.exception.FootballApiException;
 import com.example.Football_League_API.external.exception.SyncException;
 import com.example.Football_League_API.repository.CampeonatoRepository;
+import com.example.Football_League_API.repository.JogadorRepository;
 import com.example.Football_League_API.repository.SincronizacaoLogRepository;
 import com.example.Football_League_API.repository.TemporadaRepository;
 import com.example.Football_League_API.repository.TimeRepository;
@@ -28,6 +31,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,6 +45,7 @@ public class FootballApiSyncService {
     private final CampeonatoRepository campeonatoRepository;
     private final TemporadaRepository temporadaRepository;
     private final TimeRepository timeRepository;
+    private final JogadorRepository jogadorRepository;
     private final SincronizacaoLogRepository syncLogRepository;
 
     @Value("${football.api.sync.interval-hours:24}")
@@ -50,9 +55,15 @@ public class FootballApiSyncService {
     @Value("${football.api.sync.league-ids:}")
     private List<Integer> leagueIds;
 
-    // Temporada cujos times são sincronizados (o plano Free só libera 2022 a 2024)
-    @Value("${football.api.sync.team-season:2024}")
-    private int teamSeason;
+    // Faixa de temporadas liberada pelo plano da API (Free: 2022 a 2024)
+    @Value("${football.api.sync.min-season:2022}")
+    private int minSeason;
+
+    @Value("${football.api.sync.max-season:2024}")
+    private int maxSeason;
+
+    // Quantas temporadas pendentes têm elenco sincronizado por execução, para respeitar a cota diária
+    private static final int SEASONS_PER_RUN = 1;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
 
@@ -195,8 +206,10 @@ public class FootballApiSyncService {
             result.incrementTemporadas();
 
             boolean ligaConfigurada = leagueIds != null && leagueIds.contains(compDto.getId());
-            if (ligaConfigurada && seasonDto.getYear() == teamSeason) {
-                teamTargets.add(new TeamSyncTarget(compDto.getId(), seasonDto.getYear()));
+            if (ligaConfigurada) {
+                temporadaRepository.findByCampeonatoIdAndNome(campeonato.getId(), seasonDto.getOrDefaultYear())
+                        .ifPresent(temporada -> teamTargets.add(
+                                new TeamSyncTarget(compDto.getId(), seasonDto.getYear(), temporada)));
             }
         }
     }
@@ -224,52 +237,134 @@ public class FootballApiSyncService {
         }
     }
 
+    // Sincroniza elenco das temporadas pendentes, da mais antiga para a mais recente,
+    // para que o time atual de cada jogador seja o da temporada mais recente
     private void syncTeamsForAllCompetitions(List<TeamSyncTarget> teamTargets, SyncResult result) {
-        log.info("Sincronizando TIMES de {} liga(s) configurada(s)...", teamTargets.size());
+        List<TeamSyncTarget> pendentes = teamTargets.stream()
+                .filter(target -> target.season() >= minSeason && target.season() <= maxSeason)
+                .filter(target -> target.temporada().getDataSyncElenco() == null)
+                .sorted(Comparator.comparing(TeamSyncTarget::season))
+                .limit(SEASONS_PER_RUN)
+                .toList();
 
-        for (TeamSyncTarget target : teamTargets) {
-            syncTeamsForCompetitionAndSeason(target.leagueId(), target.season(), result);
+        log.info("Sincronizando ELENCOS de {} temporada(s) pendente(s) de {} configurada(s)...",
+                pendentes.size(), teamTargets.size());
+
+        for (TeamSyncTarget target : pendentes) {
+            boolean completo = syncTeamsForCompetitionAndSeason(target.leagueId(), target.season(), result);
+
+            // Só marca a temporada se nenhuma requisição falhou; senão ela segue pendente para a próxima execução
+            if (completo) {
+                target.temporada().setDataSyncElenco(LocalDateTime.now());
+                temporadaRepository.save(target.temporada());
+            } else {
+                log.warn("Elenco da temporada {} incompleto. Sera retentado na proxima execucao", target.season());
+            }
         }
     }
 
-    private void syncTeamsForCompetitionAndSeason(Integer leagueId, Integer season, SyncResult result) {
+    // Retorna true só se times e jogadores da temporada foram obtidos sem falhas
+    private boolean syncTeamsForCompetitionAndSeason(Integer leagueId, Integer season, SyncResult result) {
         try {
             List<FootballApiTeamDto> teams = footballApiClient.getTeams(leagueId, season);
 
             if (teams == null || teams.isEmpty()) {
-                return;
+                return true;
             }
 
+            boolean completo = true;
             for (FootballApiTeamDto teamDto : teams) {
                 if (teamDto.isValid()) {
-                    syncSingleTeam(teamDto, result);
+                    Time time = syncSingleTeam(teamDto, result);
                     result.incrementTimes();
+
+                    if (time != null) {
+                        completo &= syncPlayersForTeam(teamDto.getId(), season, time, result);
+                    } else {
+                        completo = false;
+                    }
                 }
             }
+            return completo;
 
         } catch (FootballApiException e) {
-            log.debug("Erro ao buscar times: {}", e.getMessage());
+            log.warn("Erro ao buscar times da liga {} temporada {}: {}", leagueId, season, e.getMessage());
+            result.addWarning("Times", e.getMessage());
+            return false;
         }
     }
 
-    private void syncSingleTeam(FootballApiTeamDto teamDto, SyncResult result) {
+    private Time syncSingleTeam(FootballApiTeamDto teamDto, SyncResult result) {
         try {
             Optional<Time> existing = timeRepository.findByNome(teamDto.getOrDefaultName());
 
-            if (existing.isEmpty()) {
-                Time time = Time.builder()
-                        .nome(teamDto.getOrDefaultName())
-                        .sigla(teamDto.getOrDefaultCode())
-                        .pais(teamDto.getOrDefaultCountry())
-                        .escudoUrl(teamDto.getLogo())
-                        .build();
-
-                timeRepository.save(time);
-                log.info("Time criado: {}", time.getNome());
+            if (existing.isPresent()) {
+                return existing.get();
             }
+
+            Time time = Time.builder()
+                    .nome(teamDto.getOrDefaultName())
+                    .sigla(teamDto.getOrDefaultCode())
+                    .pais(teamDto.getOrDefaultCountry())
+                    .escudoUrl(teamDto.getLogo())
+                    .build();
+
+            Time saved = timeRepository.save(time);
+            log.info("Time criado: {}", saved.getNome());
+            return saved;
 
         } catch (DataIntegrityViolationException e) {
             log.debug("Erro ao sincronizar: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    private boolean syncPlayersForTeam(Integer apiTeamId, Integer season, Time time, SyncResult result) {
+        try {
+            List<FootballApiPlayerDto> players = footballApiClient.getPlayers(apiTeamId, season);
+
+            for (FootballApiPlayerDto playerDto : players) {
+                if (playerDto.isValid()) {
+                    syncSinglePlayer(playerDto, apiTeamId, time);
+                    result.incrementJogadores();
+                }
+            }
+            return true;
+
+        } catch (FootballApiException e) {
+            log.warn("Erro ao buscar jogadores do time {}: {}", time.getNome(), e.getMessage());
+            result.addWarning("Jogadores", e.getMessage());
+            return false;
+        }
+    }
+
+    private void syncSinglePlayer(FootballApiPlayerDto playerDto, Integer apiTeamId, Time time) {
+        try {
+            Jogador jogador = jogadorRepository.findByApiId(playerDto.getId())
+                    .orElseGet(() -> Jogador.builder().apiId(playerDto.getId()).build());
+
+            jogador.setTime(time);
+            jogador.setNome(playerDto.getOrDefaultName());
+            jogador.setNacionalidade(playerDto.getOrDefaultNationality());
+            jogador.setPosicao(playerDto.getPosicao(apiTeamId));
+            jogador.setNumeroCamisa(playerDto.getNumero(apiTeamId));
+            jogador.setDataNascimento(parseDataNascimento(playerDto.getBirthDate()));
+
+            jogadorRepository.save(jogador);
+
+        } catch (DataIntegrityViolationException e) {
+            log.debug("Erro ao sincronizar jogador: {}", e.getMessage());
+        }
+    }
+
+    private LocalDate parseDataNascimento(String dateString) {
+        if (dateString == null || dateString.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(dateString, DATE_FORMATTER);
+        } catch (Exception e) {
+            return null;
         }
     }
 
@@ -288,6 +383,7 @@ public class FootballApiSyncService {
         log.info("Campeonatos: {}", result.getCompeticoesSincronizadas());
         log.info("Temporadas: {}", result.getTemporadasSincronizadas());
         log.info("Times: {}", result.getTimesSincronizados());
+        log.info("Jogadores: {}", result.getJogadoresSincronizados());
         log.info("Tempo: {}ms", result.getDurationMs());
     }
 
@@ -295,7 +391,8 @@ public class FootballApiSyncService {
         try {
             int total = result.getCompeticoesSincronizadas() +
                     result.getTemporadasSincronizadas() +
-                    result.getTimesSincronizados();
+                    result.getTimesSincronizados() +
+                    result.getJogadoresSincronizados();
 
             String status = result.getErrors().isEmpty() ? "SUCESSO" : "ERRO";
 
@@ -321,13 +418,14 @@ public class FootballApiSyncService {
         return result;
     }
 
-    // Liga e temporada atual cujos times devem ser sincronizados (ids da API-Football)
-    private record TeamSyncTarget(Integer leagueId, Integer season) {}
+    // Liga e temporada cujo elenco pode ser sincronizado (ids da API-Football, mais a entidade local)
+    private record TeamSyncTarget(Integer leagueId, Integer season, Temporada temporada) {}
 
     public static class SyncResult {
         private int competicoesSincronizadas = 0;
         private int temporadasSincronizadas = 0;
         private int timesSincronizados = 0;
+        private int jogadoresSincronizados = 0;
         private long durationMs = 0;
         private boolean apiAvailable = true;
         private boolean skipped = false;
@@ -337,6 +435,7 @@ public class FootballApiSyncService {
         public void incrementCompeticoes() { competicoesSincronizadas++; }
         public void incrementTemporadas() { temporadasSincronizadas++; }
         public void incrementTimes() { timesSincronizados++; }
+        public void incrementJogadores() { jogadoresSincronizados++; }
         public void setDurationMs(long ms) { this.durationMs = ms; }
         public void setApiAvailable(boolean available) { this.apiAvailable = available; }
         public void setSkipped(boolean skipped) { this.skipped = skipped; }
@@ -346,6 +445,7 @@ public class FootballApiSyncService {
         public int getCompeticoesSincronizadas() { return competicoesSincronizadas; }
         public int getTemporadasSincronizadas() { return temporadasSincronizadas; }
         public int getTimesSincronizados() { return timesSincronizados; }
+        public int getJogadoresSincronizados() { return jogadoresSincronizados; }
         public long getDurationMs() { return durationMs; }
         public boolean isApiAvailable() { return apiAvailable; }
         public boolean isSkipped() { return skipped; }

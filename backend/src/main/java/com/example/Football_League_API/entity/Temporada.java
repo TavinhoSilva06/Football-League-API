@@ -18,6 +18,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -51,6 +52,10 @@ public class Temporada {
     @Column
     @Enumerated(EnumType.STRING)
     private StatusTemporada status;
+
+    // Momento em que os times e jogadores da temporada foram sincronizados (null = pendente)
+    @Column(name = "data_sync_elenco")
+    private LocalDateTime dataSyncElenco;
 
     @OneToMany(mappedBy = "temporada")
     private List<Participacao> participacoes;

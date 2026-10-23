@@ -31,6 +31,10 @@ public class Jogador {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Id do jogador na API-Football, usado para identificá-lo na sincronização
+    @Column(name = "api_id", unique = true)
+    private Integer apiId;
+
     @ManyToOne(optional = true)
     @JoinColumn(name = "time_id")
     private Time time;

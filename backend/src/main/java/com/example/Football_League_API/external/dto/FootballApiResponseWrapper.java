@@ -23,6 +23,23 @@ public class FootballApiResponseWrapper<T> {
     @JsonProperty("errors")
     private Object errors;
 
+    // Presente em endpoints paginados, como /players
+    @JsonProperty("paging")
+    private Paging paging;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Paging {
+
+        @JsonProperty("current")
+        private Integer current;
+
+        @JsonProperty("total")
+        private Integer total;
+    }
+
     public boolean hasErrors() {
         if (errors == null) {
             return false;
