@@ -4,13 +4,13 @@
 
  ## 📋 Sobre o Projeto
 
- O **Chute Certo** é um projeto acadêmico desenvolvido como parte do curso de Engenharia de Software na **FATEC-PG**, com foco em aplicar padrões de arquitetura, design patterns e boas práticas de desenvolvimento full-stack.
+ O **Chute Certo** é um projeto acadêmico desenvolvido como parte do curso de Engenharia de Software na **FATEC-SP**, com foco em aplicar padrões de arquitetura, design patterns e boas práticas de desenvolvimento full-stack.
 
 ### Funcionalidades
 
 #### 🎮 Frontend (React + Vite + Tailwind CSS)
 - ✅ Interface moderna e responsiva com sidebar fixa, topbar sticky, tema branco/azul e animações
-- ✅ Navegação intuitiva: Palpites, Campeonatos → Temporadas → Partidas
+- ✅ Navegação intuitiva: Visão geral, Palpites e Times
 - ✅ Gerenciamento completo de times e elencos
 - ✅ Animações suaves e efeitos visuais profissionais
 - ✅ Validação de formulários com feedback de erro por campo
@@ -18,6 +18,9 @@
 - ✅ Proxy Vite resolvendo CORS automaticamente
 - ✅ Login/cadastro com JWT e perfil `USER`/`ADMIN`
 - ✅ Aba de palpites com placar exato, pontos e patente
+- ✅ Contagem regressiva por rodada, bloqueio após o prazo e botão **Salvar todos**
+- ✅ Painel `/palpites` com aproveitamento geral e por temporada
+- ✅ Atualização automática da rodada após a simulação, sem botão manual na interface
 
 #### 🔧 API REST (Spring Boot)
 - ✅ Cadastro e gerenciamento de campeonatos
@@ -27,38 +30,47 @@
 - ✅ **Eventos de partida** (gols, assistências, cartões) com atualização automática de estatísticas
 - ✅ **Cálculo automático de classificações** com 5 critérios de desempate
 - ✅ **Rankings de artilharia e assistências** em tempo real
-- ✅ 50+ endpoints RESTful totalmente implementados
+- ✅ 56 endpoints RESTful totalmente implementados
 - ✅ Validação robusta com mensagens em português
 - ✅ Autenticação JWT com perfis `USER`/`ADMIN` e seed de administrador
-- ✅ Simulação de rodada com premiação automática de palpites e patentes
+- ✅ Prazo por rodada persistido, simulação agendada no instante exato e fallback por polling
+- ✅ Premiação automática de palpites e patentes com proteção contra duplicidade
+- ✅ Salvamento de palpites em lote em uma única requisição
+- ✅ Integração opcional com API-Football (sync manual; automática desativada por padrão)
 
 ## 🏗️ Arquitetura
 
 ```
 Football-League-API/
 ├── backend/                          # API Spring Boot
-│   ├── src/main/java/.../
-│   │   ├── controller/              # 8 Controllers (37 endpoints)
+│   ├── src/main/java/.../com/example/Football_League_API/
+│   │   ├── controller/              # 13 controllers (56 endpoints)
 │   │   ├── service/                 # Lógica de negócio
 │   │   ├── repository/              # Acesso a dados JPA
-│   │   ├── entity/                  # 7 Entidades JPA
+│   │   ├── entity/                  # 11 entidades JPA
 │   │   ├── dto/                     # Request/Response DTOs
 │   │   ├── mapper/                  # Conversão entity ↔ DTO
+│   │   ├── scheduler/               # Agendamento exato + fallback do prazo
+│   │   ├── event/                   # Evento de prazo definido
+│   │   ├── external/                # Cliente e sincronização com API-Football
+│   │   ├── config/                  # Seed admin, segurança e RestTemplate
+│   │   ├── security/                # JWT filter/service
 │   │   ├── exception/               # GlobalExceptionHandler
-│   │   └── enum/                    # Enums de domínio
+│   │   └── enu/                     # Enums de domínio
+│   ├── src/main/resources/application.properties
 │   ├── pom.xml
 │   └── compose.yaml                 # Docker Compose (PostgreSQL local)
 │
 ├── frontend/                         # React + Vite
 │   ├── src/
-│   │   ├── pages/                   # Campeonatos, Temporadas, Times, Login, Palpites
-│   │   ├── components/              # UI reutilizáveis + Layout
+│   │   ├── pages/                   # Campeonatos, Temporadas, Partidas, Palpites, Dashboard, Times, Login
+│   │   ├── components/              # Layout, ui, icons, PartidaItem, PalpiteResultadoItem
 │   │   ├── api/                     # Cliente axios + hooks React Query
+│   │   ├── lib/                     # brand, patentes, enums, formatação
 │   │   ├── AuthContext.jsx          # Sessão JWT
-│   │   ├── lib/                     # Utilitários (enums, formatação, patentes)
 │   │   ├── App.jsx                  # Roteador principal
 │   │   └── index.css                # Tailwind + animações
-│   ├── docs/                         # Documentação de cada tela
+│   ├── docs/                         # Documentação por tela
 │   ├── vite.config.js               # Proxy CORS
 │   └── package.json
 │
@@ -73,7 +85,7 @@ Football-League-API/
 | **Backend - Framework** | Spring Boot | 3.2.0 |
 | **Backend - Build** | Maven | 3.9.16+ |
 | **Backend - ORM** | Hibernate / Spring Data JPA | 6.3.1 |
-| **Backend - Banco** | PostgreSQL | 16-alpine (docker) |
+| **Backend - Banco** | PostgreSQL | Supabase (padrão) ou 16-alpine via Docker |
 | **Frontend - Framework** | React | 19.2 |
 | **Frontend - Build** | Vite | 8.3 |
 | **Frontend - Estilos** | Tailwind CSS | 4.3 |
@@ -87,7 +99,7 @@ Football-League-API/
 
 - **Node.js 18+** (`node -v`)
 - **Java 21 LTS** (`java -version`)
-- **Maven 3.9+** (usar `./mvnw` do repositório)
+- **Maven 3.9+** (usar `.\mvnw.cmd` no Windows ou `./mvnw` no Linux/macOS)
 - **Docker + Docker Compose** (para opção local)
 
 ---
@@ -104,19 +116,26 @@ cd Football-League-API
 
 ### 1️⃣ Backend (com banco local)
 
+O `application.properties` aponta para o Supabase por padrão. Para usar o Postgres local do `compose.yaml`, sobrescreva o datasource por variáveis de ambiente:
+
 ```powershell
 # Terminal 1 - Backend
 cd backend
 
 # Inicie o PostgreSQL em container
-docker-compose up -d
+docker compose up -d
 
-# O backend vai usar o banco local automaticamente
-# Abra o arquivo: backend\src\main\resources\application.properties
-# Verifique que NÃO há variável ${DB_PASSWORD} (use o compose.yaml)
+# Descubra a porta publicada no host (o compose.yaml não fixa a porta do host)
+docker compose port postgres 5432
+# Exemplo de saída: 0.0.0.0:49153
+
+# Ajuste para a porta retornada acima
+$env:SPRING_DATASOURCE_URL = "jdbc:postgresql://localhost:49153/mydatabase"
+$env:SPRING_DATASOURCE_USERNAME = "myuser"
+$env:SPRING_DATASOURCE_PASSWORD = "secret"
 
 # Compile e rode
-./mvnw spring-boot:run
+.\mvnw.cmd spring-boot:run
 ```
 
 **✅ Saída esperada:**
@@ -153,12 +172,13 @@ Frontend em `http://localhost:5173` → abre automaticamente no navegador.
 
 ### Setup
 
-1. **Crie uma conta em [Supabase](https://supabase.com)**
-2. **Crie um projeto** e copie:
+1. Use o projeto Supabase já configurado em `spring.datasource.url`, ou crie o seu em [Supabase](https://supabase.com)
+2. Para um projeto próprio, copie:
    - Host: `db.xxxxx.supabase.co`
    - Database: `postgres`
    - User: `postgres`
    - Password: sua senha
+3. Se o host for diferente do padrão, defina também `$env:SPRING_DATASOURCE_URL`
 
 ### 1️⃣ Backend (com Supabase)
 
@@ -169,11 +189,11 @@ cd backend
 # IMPORTANTE: Defina a senha do Supabase
 $env:DB_PASSWORD = "sua_senha_supabase_aqui"
 
-# Verifique
-echo $env:DB_PASSWORD
+# Se usar outro projeto, ajuste também a URL
+# $env:SPRING_DATASOURCE_URL = "jdbc:postgresql://db.xxxxx.supabase.co:5432/postgres"
 
 # Compile e rode
-./mvnw spring-boot:run
+.\mvnw.cmd spring-boot:run
 ```
 
 **O que acontece:**
@@ -203,10 +223,10 @@ npm run dev
 | Aspecto | Docker Compose | Supabase |
 |---------|---|---|
 | **Custos** | Grátis | Grátis (tier) |
-| **Setup** | Automático | Criar conta |
-| **Dados Persistem** | Até `docker-compose down` | Sempre |
+| **Setup** | Requer override das variáveis do datasource | É o padrão configurado |
+| **Dados Persistem** | Sem volume: até `docker compose down` | Sempre |
 | **Acesso SQL** | Via `psql` | Via Supabase UI |
-| **Para Desenvolvimento** | ✅ Recomendado | ⚠️ Cuidado com dados públicos |
+| **Para Desenvolvimento** | ✅ Isolado do banco remoto | ⚠️ Cuidado com dados públicos |
 | **Para Produção** | ❌ Não use | ✅ Ideal |
 | **CORS** | Proxy Vite | Proxy Vite |
 
@@ -216,7 +236,7 @@ npm run dev
 
 - Cadastro público (`POST /auth/register`) cria usuários com perfil `USER`.
 - Login (`POST /auth/login`) retorna token JWT; `GET /auth/me` retorna o perfil atual.
-- `ADMIN` faz CRUD de campeonatos, temporadas, times e partidas; `USER` pode palpitar e simular rodadas.
+- `ADMIN` faz CRUD de campeonatos, temporadas, times e partidas; `USER` pode palpitar. A simulação é automática após o prazo da rodada.
 - Administrador inicial criado por `AdminSeeder` com `app.admin.*` (sobrescrito por `ADMIN_NOME`, `ADMIN_EMAIL` e `ADMIN_PASSWORD`).
 
 ### Variáveis de ambiente
@@ -230,6 +250,19 @@ $env:JWT_EXPIRATION_MS = "86400000"
 ```
 
 Também existe `backend/.env.example` com todas as variáveis.
+
+### Configurações atuais
+
+| Propriedade | Valor | Observação |
+|-------------|-------|------------|
+| `spring.application.name` | `chute-certo-api` | Identidade da API |
+| `spring.jpa.hibernate.ddl-auto` | `update` | Schema ajustado automaticamente |
+| `football.api.sync.on-startup` | `false` | Sync externo não roda ao iniciar |
+| `football.api.sync.scheduled` | `false` | Sync externo não é periódico |
+| `football.api.sync.min-season` / `max-season` | `2022` / `2022` | Faixa liberada pelo plano da API-Football |
+| `palpite.prazo-minutos` | `4` | Duração da janela de palpites por rodada |
+| `palpite.simulacao.habilitada` | `true` | Ativa o agendador de simulação |
+| `palpite.simulacao.cron` | `*/5 * * * * *` | Fallback de recuperação a cada 5 segundos |
 
 ### Regras de palpites
 
@@ -245,8 +278,15 @@ Também existe `backend/.env.example` com todas as variáveis.
 | Diamante | 12 | 4.000 |
 | Perito | 10 | 5.000+ |
 
-- A simulação (`POST /temporadas/{temporadaId}/rodadas/{rodada}/simular`) sorteia os placares, finaliza a rodada e premia os palpites uma única vez.
-- Depois da simulação os palpites ficam bloqueados.
+- Cada rodada fica aberta por `palpite.prazo-minutos` (padrão: 4), contados a partir da geração do calendário ou da conclusão da simulação da rodada anterior.
+- Após o prazo ninguém cria ou altera palpites da rodada, nem `USER` nem `ADMIN`.
+- A simulação é agendada para o instante exato em que o prazo expira; um fallback a cada `palpite.simulacao.cron` (padrão: 5s) recupera prazos perdidos após reinício do backend.
+- A simulação sorteia os placares, finaliza a rodada, premia os palpites uma única vez e só então abre o prazo da próxima rodada.
+- Rodadas simuladas sem nenhum palpite do usuário aparecem em **Meus Resultados** com a mensagem de que não houve palpite naquela rodada.
+- `POST /temporadas/{temporadaId}/rodadas/{rodada}/simular` continua disponível na API, mas a interface não dispara simulação manual; o endpoint só funciona depois de expirado o prazo.
+- Na interface, os placares são enviados juntos por `POST /palpites/lote`; o botão **Salvar todos** aparece enquanto a rodada está aberta.
+- A simulação depende de o backend estar em execução; `palpite.simulacao.habilitada=true` ativa o agendador.
+- Depois da simulação os palpites ficam bloqueados e a próxima rodada é aberta com um novo prazo.
 
 ---
 
@@ -256,9 +296,10 @@ Também existe `backend/.env.example` com todas as variáveis.
 2. **Temporadas**: Clique em "📅 Gerenciar Temporadas"
 3. **Criar Temporada**: Nome, datas, número de rodadas, status
 4. **Inscrever Times**: Aba "Times Inscritos" → "Inscrever Time"
-5. **Criar Partidas**: Aba "Partidas" → "Nova Partida"
-   - Mandante, Visitante, Rodada, Data/Hora
-   - Validação automática: mandante ≠ visitante
+5. **Preparar Partidas**: gere o calendário com `POST /temporadas/{id}/calendario` ou crie partidas manualmente na aba "Partidas"
+   - Geração automática: turno e returno, times inscritos com elenco
+   - Criação manual: mandante, visitante, rodada, data/hora e validação mandante ≠ visitante
+   - O prazo da primeira rodada começa quando o calendário é gerado
 6. **Registrar Eventos** (via Postman/API):
    - Registre gols, assistências, cartões dos jogadores
    - Sistema atualiza automaticamente as estatísticas ✨
@@ -271,13 +312,14 @@ Também existe `backend/.env.example` com todas as variáveis.
    - Aba "Cartões" → Jogadores com cartões (amarelos + vermelhos) 🟨🟥
 9. **Ver Classificação**: Aba "Classificação" → tabela automática com desempate!
 10. **Times**: Gerenciar elencos, ver jogadores por posição
-11. **Palpites**: Entre na conta, abra a aba "Palpites", envie placares e simule a rodada
+11. **Palpites**: Entre na conta, abra a aba "Palpites", preencha os placares e use "Salvar todos" antes do prazo; acompanhe a contagem regressiva e o resultado automático
     - Acerto apenas com placar exato
     - Pontos e patente atualizados automaticamente após a simulação
+12. **Painel de Palpites**: acesse `/palpites` para ver aproveitamento geral, acertos, erros, pontos e histórico por temporada
 
 ---
 
-## 📡 50+ Endpoints Implementados
+## 📡 56 Endpoints Implementados
 
 ### Campeonatos (6)
 - `GET /campeonatos` — Lista todos
@@ -303,7 +345,7 @@ Também existe `backend/.env.example` com todas as variáveis.
 - `PUT /times/{id}` — Editar
 - `DELETE /times/{id}` — Deletar
 
-### Jogadores (4)
+### Jogadores (5)
 - `GET /jogadores/{id}` — Detalhe
 - `GET /jogadores/time/{id}` — Por time
 - `POST /jogadores` — Criar
@@ -349,8 +391,15 @@ Também existe `backend/.env.example` com todas as variáveis.
 - `GET /auth/me` — Perfil autenticado (pontos, patente, role)
 - `GET /temporadas/{temporadaId}/palpites/rodada-atual` — Jogos e palpites da rodada atual
 - `GET /temporadas/{temporadaId}/palpites/resultados` — Histórico de acertos por rodada
-- `POST /palpites` — Criar/atualizar palpite
-- `POST /temporadas/{temporadaId}/rodadas/{rodada}/simular` — Simular e premiar rodada
+- `POST /palpites` — Criar/atualizar um palpite
+- `POST /palpites/lote` — Criar/atualizar vários palpites em uma única requisição
+
+### Simulação e Calendário (2)
+- `POST /temporadas/{temporadaId}/calendario` — Gerar turno e returno automáticos
+- `POST /temporadas/{temporadaId}/rodadas/{rodada}/simular` — Simular e premiar rodada após o prazo
+
+### Sincronização (1)
+- `POST /api/v1/sync/football-api` — Sincronizar times/elencos com API-Football (execução manual)
 
 ---
 
@@ -358,12 +407,13 @@ Também existe `backend/.env.example` com todas as variáveis.
 
 | Página | Rota | Funcionalidades |
 |--------|------|-----------------|
-| **Campeonatos** | `/campeonatos` | Lista, criar, editar, excluir |
+| **Visão geral / Campeonatos** | `/campeonatos` | Lista, criar, editar, excluir |
 | **Detalhe Campeonato** | `/campeonatos/:id` | Ver times, botão para gerenciar temporadas |
 | **Temporadas** | `/campeonatos/:id/temporadas` | Lista, criar, editar, excluir temporadas |
-| **Hub Temporada** | `/temporadas/:id` | 8 abas: Classificação, Partidas, Palpites, Meus Resultados, Artilharia, Assistências, Cartões, Times Inscritos |
+| **Hub Temporada** | `/temporadas/:id/*` | 8 abas: Classificação, Partidas, Palpites, Meus Resultados, Artilharia, Assistências, Cartões, Times Inscritos |
+| **Painel de Palpites** | `/palpites` | Aproveitamento geral e por temporada, acertos, erros e pontos; link para `/temporadas/:id?aba=palpites` |
 | **Partidas** | Aba em Temporada | Criar, editar, registrar resultado, filtros (somente ADMIN), escudos |
-| **Palpites** | Aba em Temporada | Enviar placares, simular rodada, ver pontos/patente e acertos |
+| **Palpites** | Aba em Temporada | Preencher placares e salvar todos de uma vez, contagem regressiva, resultado automático, pontos/patente e acertos |
 | **Meus Resultados** | Aba em Temporada | Histórico de acertos e erros por rodada simulada |
 | **Artilharia** | Aba em Temporada | Top goleadores (apenas com gols > 0): gols, jogos, média |
 | **Assistências** | Aba em Temporada | Top assistentes (apenas com asst > 0): assistências, jogos, média |
@@ -373,6 +423,8 @@ Também existe `backend/.env.example` com todas as variáveis.
 | **Detalhe Time** | `/times/:id` | 2 abas: Elenco (jogadores por posição), Jogos |
 | **Login** | `/login` | Entrar com e-mail/senha |
 | **Cadastro** | `/register` | Criar conta `USER` |
+
+`/` redireciona para `/campeonatos`; `/temporadas` redireciona para `/campeonatos`.
 
 **Toda interface construída com Tailwind CSS:**
 - Tema: branco + azul (`#2563eb` → `#0ea5e9`), vermelho reservado para erros/ações de exclusão
@@ -387,11 +439,13 @@ Também existe `backend/.env.example` com todas as variáveis.
 ### "Conexão recusada" na API
 
 **Se rodar com Docker:**
-```bash
-docker-compose down
-docker-compose up -d
+```powershell
+docker compose down
+docker compose up -d
 # Aguarde ~5s o Postgres iniciar
-./mvnw spring-boot:run
+docker compose port postgres 5432
+# Reajuste SPRING_DATASOURCE_URL com a porta retornada
+.\mvnw.cmd spring-boot:run
 ```
 
 **Se rodar com Supabase:**
@@ -404,17 +458,18 @@ $env:DB_PASSWORD = "sua_senha"
 
 # Reinicie o backend
 Ctrl+C
-./mvnw spring-boot:run
+.\mvnw.cmd spring-boot:run
 ```
 
 ### "Porta 8080 já em uso"
 
-```bash
+```powershell
 # Encontre quem está usando
-lsof -i :8080
+Get-NetTCPConnection -LocalPort 8080 | Select-Object OwningProcess
 
 # Mate o processo ou use outra porta
-./mvnw spring-boot:run -Dserver.port=8081
+Stop-Process -Id <PID>
+.\mvnw.cmd spring-boot:run -Dserver.port=8081
 ```
 
 ### Frontend não conecta na API
@@ -431,9 +486,12 @@ Cada tela tem documentação detalhada:
 - `frontend/docs/campeonatos.md` — Endpoints, formulários, regras
 - `frontend/docs/temporadas.md` — Ciclo de vida, encerramento
 - `frontend/docs/partidas.md` — Criação, filtros, resultado
+- `frontend/docs/participacoes.md` — Inscrição de times na temporada
 - `frontend/docs/classificacao.md` — Desempate, MATA_MATA inválido
 - `frontend/docs/times.md` — CRUD, escudos
 - `frontend/docs/jogadores.md` — Por time, criar/editar
+
+As telas de Palpites e o painel de aproveitamento são descritos nas seções **Autenticação, Perfis e Palpites** e **Frontend: Página por Página** deste README.
 
 ---
 
@@ -468,7 +526,7 @@ Cada tela tem documentação detalhada:
 
 ## 📄 Licença
 
-MIT License — Veja [LICENSE](LICENSE) para detalhes.
+MIT License — licença prevista para o projeto; o arquivo `LICENSE` ainda não foi adicionado ao repositório.
 
 ---
 
@@ -484,4 +542,4 @@ MIT License — Veja [LICENSE](LICENSE) para detalhes.
 ---
 
 **Última atualização**: 2026-11-26<br>
-**Status**: ✅ Nível 3 100% Completo + Autenticação JWT, Perfis, Simulação de Rodada, Palpites e Patentes
+**Status**: ✅ Nível 3 100% Completo + JWT, Perfis, Palpites em lote, Prazo por rodada, Simulação automática, Dashboard de aproveitamento e Patentes
