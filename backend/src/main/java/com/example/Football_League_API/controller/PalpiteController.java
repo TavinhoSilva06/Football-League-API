@@ -1,5 +1,6 @@
 package com.example.Football_League_API.controller;
 
+import com.example.Football_League_API.dto.request.PalpiteLoteRequestDto;
 import com.example.Football_League_API.dto.request.PalpiteRequestDto;
 import com.example.Football_League_API.dto.response.PalpiteResponseDto;
 import com.example.Football_League_API.dto.response.RodadaPalpitesResponseDto;
@@ -34,5 +35,10 @@ public class PalpiteController {
     @PostMapping("/palpites")
     public ResponseEntity<PalpiteResponseDto> salvar(@Valid @RequestBody PalpiteRequestDto dto) {
         return ResponseEntity.ok(service.salvar(dto));
+    }
+
+    @PostMapping("/palpites/lote")
+    public ResponseEntity<List<PalpiteResponseDto>> salvarLote(@Valid @RequestBody PalpiteLoteRequestDto dto) {
+        return ResponseEntity.ok(service.salvarLote(dto.getPalpites()));
     }
 }

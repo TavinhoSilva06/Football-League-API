@@ -23,6 +23,7 @@ public class JogoPalpiteResponseDto {
     private String visitanteNome;
     private String visitanteEscudoUrl;
     private LocalDateTime dataHora;
+    private LocalDateTime dataLimitePalpite;
     private StatusPartida status;
     private Integer golsMandante;
     private Integer golsVisitante;

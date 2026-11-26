@@ -1,12 +1,19 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
-import { Async, Badge, Button, Card, ConfirmDialog, EmptyState, ErrorBox, Escudo } from '../components/ui'
+import { Async, Badge, Button, Card, EmptyState, ErrorBox, Escudo } from '../components/ui'
 import { useGet } from '../api/hooks'
 import { api, parseApiError } from '../api/client'
 import { useAuth } from '../AuthContext'
 import { PATENTE, PATENTE_COR, PONTOS_POR_PATENTE } from '../lib/patentes'
 import { PalpiteResultadoItem } from '../components/PalpiteResultadoItem'
+
+function formatarTempo(ms) {
+  const total = Math.max(0, Math.ceil(ms / 1000))
+  const minutos = String(Math.floor(total / 60)).padStart(2, '0')
+  const segundos = String(total % 60).padStart(2, '0')
+  return `${minutos}:${segundos}`
+}
 
 export function PalpitesPage({ temporadaId }) {
   const { user, recarregarPerfil } = useAuth()
@@ -14,13 +21,25 @@ export function PalpitesPage({ temporadaId }) {
   const query = useGet(
     ['palpites-rodada', temporadaId],
     `/temporadas/${temporadaId}/palpites/rodada-atual`,
-    { enabled: Boolean(user) },
+    { enabled: Boolean(user), refetchInterval: 10000 },
   )
   const [alteracoes, setAlteracoes] = useState({})
-  const [busyId, setBusyId] = useState(null)
-  const [simulando, setSimulando] = useState(false)
-  const [showSimular, setShowSimular] = useState(false)
+  const [salvandoTodos, setSalvandoTodos] = useState(false)
   const [erro, setErro] = useState(null)
+  const [agora, setAgora] = useState(() => Date.now())
+  const rodadaAnterior = useRef(null)
+
+  useEffect(() => {
+    const intervalo = setInterval(() => setAgora(Date.now()), 1000)
+    return () => clearInterval(intervalo)
+  }, [])
+
+  useEffect(() => {
+    if (query.isSuccess && query.data?.rodada !== rodadaAnterior.current) {
+      rodadaAnterior.current = query.data?.rodada ?? null
+      recarregarPerfil()
+    }
+  }, [query.isSuccess, query.data?.rodada, recarregarPerfil])
 
   if (!user) {
     return (
@@ -39,47 +58,39 @@ export function PalpitesPage({ temporadaId }) {
     }
   }
 
-  async function salvar(jogo) {
-    const atual = valoresPalpite(jogo)
-    if (atual.golsMandante === '' || atual.golsVisitante === '') {
-      setErro('Informe os dois placares do seu palpite.')
-      return
-    }
-    setBusyId(jogo.partidaId)
-    setErro(null)
-    try {
-      await api.post('/palpites', {
-        partidaId: jogo.partidaId,
-        golsMandante: Number(atual.golsMandante),
-        golsVisitante: Number(atual.golsVisitante),
+  function palpitesParaEnvio(jogos) {
+    return jogos
+      .filter((jogo) => !jogo.bloqueado && !prazoExpirado)
+      .map((jogo) => {
+        const atual = valoresPalpite(jogo)
+        if (atual.golsMandante === '' || atual.golsVisitante === '') return null
+        return {
+          partidaId: jogo.partidaId,
+          golsMandante: Number(atual.golsMandante),
+          golsVisitante: Number(atual.golsVisitante),
+        }
       })
-      await qc.invalidateQueries({ queryKey: ['palpites-rodada', temporadaId] })
-      await qc.invalidateQueries({ queryKey: ['palpites-resultados', temporadaId] })
-    } catch (err) {
-      setErro(parseApiError(err).message)
-    } finally {
-      setBusyId(null)
-    }
+      .filter(Boolean)
   }
 
-  async function simular(rodada) {
-    setSimulando(true)
+  async function salvarTodos() {
+    if (palpitesPreenchidos.length === 0) {
+      setErro('Preencha pelo menos um placar para salvar.')
+      return
+    }
+    setSalvandoTodos(true)
     setErro(null)
     try {
-      await api.post(`/temporadas/${temporadaId}/rodadas/${rodada}/simular`)
+      await api.post('/palpites/lote', { palpites: palpitesPreenchidos })
       await Promise.all([
         qc.invalidateQueries({ queryKey: ['palpites-rodada', temporadaId] }),
         qc.invalidateQueries({ queryKey: ['palpites-resultados', temporadaId] }),
-        qc.invalidateQueries({ queryKey: ['partidas-temp', temporadaId] }),
-        qc.invalidateQueries({ queryKey: ['partidas-time'] }),
-        qc.invalidateQueries({ queryKey: ['classificacao', temporadaId] }),
-        qc.invalidateQueries({ queryKey: ['temporada', temporadaId] }),
       ])
-      await recarregarPerfil()
+      setAlteracoes({})
     } catch (err) {
       setErro(parseApiError(err).message)
     } finally {
-      setSimulando(false)
+      setSalvandoTodos(false)
     }
   }
 
@@ -98,6 +109,10 @@ export function PalpitesPage({ temporadaId }) {
 
   const pontos = user.pontos ?? 0
   const progresso = user.proximaPatente ? ((pontos % 1000) / 1000) * 100 : 100
+  const dataLimite = query.data?.dataLimitePalpite ? new Date(query.data.dataLimitePalpite).getTime() : null
+  const restanteMs = dataLimite === null ? null : Math.max(0, dataLimite - agora)
+  const prazoExpirado = restanteMs !== null && restanteMs === 0
+  const palpitesPreenchidos = palpitesParaEnvio(query.data?.jogos ?? [])
 
   return (
     <div className="space-y-5">
@@ -173,17 +188,27 @@ export function PalpitesPage({ temporadaId }) {
                   <p className="text-sm text-slate-500">
                     {data.palpitesEnviados} palpites enviados · {data.acertos} acertos · {data.pontosGanhos} pontos nesta rodada
                   </p>
+                  {dataLimite !== null && (
+                    <p className={`mt-1 text-sm font-semibold ${prazoExpirado ? 'text-amber-700' : 'text-primary-dark'}`}>
+                      {prazoExpirado
+                        ? 'Prazo encerrado — resultado em instantes'
+                        : `Prazo para palpites: ${formatarTempo(restanteMs)}`}
+                    </p>
+                  )}
                 </div>
-                {data.jogos.some((jogo) => !jogo.bloqueado) && (
-                  <Button size="sm" onClick={() => setShowSimular(true)} disabled={simulando}>
-                    {simulando ? 'Simulando...' : 'Simular rodada'}
-                  </Button>
-                )}
+                <Button
+                  size="sm"
+                  onClick={salvarTodos}
+                  disabled={salvandoTodos || prazoExpirado || palpitesPreenchidos.length === 0}
+                >
+                  {salvandoTodos ? 'Salvando...' : `Salvar todos (${palpitesPreenchidos.length})`}
+                </Button>
               </div>
 
               <div className="space-y-3">
                 {data.jogos.map((jogo) => {
                   const atual = valoresPalpite(jogo)
+                  const bloqueado = jogo.bloqueado || prazoExpirado
                   return (
                     <Card key={jogo.partidaId} className="p-4">
                       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -195,8 +220,8 @@ export function PalpitesPage({ temporadaId }) {
                           <Escudo time={{ nome: jogo.visitanteNome, escudoUrl: jogo.visitanteEscudoUrl }} size="sm" />
                         </div>
                         <div className="flex items-center gap-2">
-                          {jogo.palpiteId && !jogo.bloqueado && <Badge color="blue">Palpite enviado</Badge>}
-                          {jogo.bloqueado && (
+                          {jogo.palpiteId && !bloqueado && <Badge color="blue">Palpite enviado</Badge>}
+                          {bloqueado && (
                             <Badge color={jogo.acerto ? 'green' : 'slate'}>
                               {jogo.status === 'FINALIZADA'
                                 ? jogo.acerto
@@ -208,7 +233,7 @@ export function PalpitesPage({ temporadaId }) {
                         </div>
                       </div>
 
-                      {jogo.bloqueado ? (
+                      {bloqueado ? (
                         <p className="mt-3 text-sm text-slate-600">
                           Resultado: <strong>{jogo.golsMandante ?? '-'} x {jogo.golsVisitante ?? '-'}</strong>
                           {' · '}Seu palpite: <strong>{jogo.palpiteMandante ?? '-'} x {jogo.palpiteVisitante ?? '-'}</strong>
@@ -232,25 +257,12 @@ export function PalpitesPage({ temporadaId }) {
                             onChange={(e) => alterar(jogo, 'golsVisitante', e.target.value)}
                             className="w-20 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
                           />
-                          <Button size="sm" variant="secondary" onClick={() => salvar(jogo)} disabled={busyId === jogo.partidaId}>
-                            {busyId === jogo.partidaId ? 'Salvando...' : jogo.palpiteId ? 'Atualizar' : 'Salvar'}
-                          </Button>
                         </div>
                       )}
                     </Card>
                   )
                 })}
               </div>
-
-              {showSimular && (
-                <ConfirmDialog
-                  title="Simular rodada"
-                  message="Os resultados desta rodada serão gerados e os palpites serão avaliados. Após isso, não será possível alterar os palpites."
-                  confirmLabel="Simular"
-                  onConfirm={() => simular(data.rodada)}
-                  onClose={() => setShowSimular(false)}
-                />
-              )}
             </div>
           )
         }}

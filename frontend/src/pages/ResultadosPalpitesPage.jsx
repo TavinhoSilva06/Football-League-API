@@ -22,45 +22,56 @@ export function ResultadosPalpitesPage({ temporadaId }) {
   }
 
   return (
-    <Async query={query} empty="Nenhuma rodada simulada com palpites avaliados ainda.">
+    <Async query={query} empty="Nenhuma rodada simulada ainda.">
       {(rodadas) => (
         <div className="space-y-4">
           {rodadas.map((rodada) => {
             const acertos = rodada.jogos.filter((jogo) => jogo.acerto)
             const erros = rodada.jogos.filter((jogo) => !jogo.acerto)
+            const semPalpites = Boolean(rodada.semPalpites)
 
             return (
               <Card key={rodada.rodada} className="p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h2 className="text-lg font-bold text-slate-900">Rodada {rodada.rodada}</h2>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge color="green">{acertos.length} acerto(s)</Badge>
-                    <Badge color="slate">{erros.length} erro(s)</Badge>
-                    <Badge color="blue">{rodada.pontosGanhos} pontos</Badge>
-                  </div>
+                  {semPalpites ? (
+                    <Badge color="slate">Nenhum palpite registrado</Badge>
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge color="green">{acertos.length} acerto(s)</Badge>
+                      <Badge color="slate">{erros.length} erro(s)</Badge>
+                      <Badge color="blue">{rodada.pontosGanhos} pontos</Badge>
+                    </div>
+                  )}
                 </div>
-                <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  <div>
-                    <h3 className="mb-2 text-sm font-semibold text-emerald-800">Acertos</h3>
-                    {acertos.length === 0 ? (
-                      <p className="text-sm text-slate-600">Nenhum acerto nesta rodada.</p>
-                    ) : (
-                      <ul className="space-y-2">
-                        {acertos.map((jogo) => <PalpiteResultadoItem key={jogo.partidaId} jogo={jogo} />)}
-                      </ul>
-                    )}
+                {semPalpites ? (
+                  <p className="mt-4 rounded-lg bg-slate-50 p-4 text-sm text-slate-600">
+                    Você não fez nenhum palpite nesta rodada.
+                  </p>
+                ) : (
+                  <div className="mt-4 grid gap-4 md:grid-cols-2">
+                    <div>
+                      <h3 className="mb-2 text-sm font-semibold text-emerald-800">Acertos</h3>
+                      {acertos.length === 0 ? (
+                        <p className="text-sm text-slate-600">Nenhum acerto nesta rodada.</p>
+                      ) : (
+                        <ul className="space-y-2">
+                          {acertos.map((jogo) => <PalpiteResultadoItem key={jogo.partidaId} jogo={jogo} />)}
+                        </ul>
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="mb-2 text-sm font-semibold text-red-700">Erros</h3>
+                      {erros.length === 0 ? (
+                        <p className="text-sm text-slate-600">Nenhum erro nesta rodada.</p>
+                      ) : (
+                        <ul className="space-y-2">
+                          {erros.map((jogo) => <PalpiteResultadoItem key={jogo.partidaId} jogo={jogo} />)}
+                        </ul>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="mb-2 text-sm font-semibold text-red-700">Erros</h3>
-                    {erros.length === 0 ? (
-                      <p className="text-sm text-slate-600">Nenhum erro nesta rodada.</p>
-                    ) : (
-                      <ul className="space-y-2">
-                        {erros.map((jogo) => <PalpiteResultadoItem key={jogo.partidaId} jogo={jogo} />)}
-                      </ul>
-                    )}
-                  </div>
-                </div>
+                )}
               </Card>
             )
           })}

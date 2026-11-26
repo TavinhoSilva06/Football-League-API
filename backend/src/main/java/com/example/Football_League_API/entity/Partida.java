@@ -39,6 +39,9 @@ public class Partida {
     @Column
     private LocalDateTime dataHora;
 
+    @Column(name = "data_limite_palpite")
+    private LocalDateTime dataLimitePalpite;
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "time_mandante_id")
     private Time timeMandante;

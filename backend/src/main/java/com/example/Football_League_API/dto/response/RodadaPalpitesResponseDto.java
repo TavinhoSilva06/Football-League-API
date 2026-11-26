@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -15,8 +16,10 @@ public class RodadaPalpitesResponseDto {
 
     private Long temporadaId;
     private Integer rodada;
+    private LocalDateTime dataLimitePalpite;
     private List<JogoPalpiteResponseDto> jogos;
     private Integer palpitesEnviados;
     private Integer acertos;
     private Integer pontosGanhos;
+    private Boolean semPalpites;
 }
