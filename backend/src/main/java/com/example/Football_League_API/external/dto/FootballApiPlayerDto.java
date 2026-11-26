@@ -71,6 +71,19 @@ public class FootballApiPlayerDto {
                 .orElse(null);
     }
 
+    // Minutos jogados pelo jogador no time, na liga informada (somando as partidas da liga)
+    public int getMinutos(Integer teamId, Integer leagueId) {
+        if (statistics == null) {
+            return 0;
+        }
+        return statistics.stream()
+                .filter(s -> s.getTeam() != null && teamId.equals(s.getTeam().getId()))
+                .filter(s -> s.getLeague() != null && leagueId.equals(s.getLeague().getId()))
+                .filter(s -> s.getGames() != null && s.getGames().getMinutes() != null)
+                .mapToInt(s -> s.getGames().getMinutes())
+                .sum();
+    }
+
     // Um jogador pode ter estatísticas de mais de um time na mesma temporada (transferências)
     private java.util.Optional<Statistic> statisticFor(Integer teamId) {
         if (statistics == null || statistics.isEmpty()) {
@@ -120,8 +133,21 @@ public class FootballApiPlayerDto {
         @JsonProperty("team")
         private TeamRef team;
 
+        @JsonProperty("league")
+        private LeagueRef league;
+
         @JsonProperty("games")
         private Games games;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class LeagueRef {
+
+        @JsonProperty("id")
+        private Integer id;
     }
 
     @Data
@@ -145,5 +171,8 @@ public class FootballApiPlayerDto {
 
         @JsonProperty("position")
         private String position;
+
+        @JsonProperty("minutes")
+        private Integer minutes;
     }
 }

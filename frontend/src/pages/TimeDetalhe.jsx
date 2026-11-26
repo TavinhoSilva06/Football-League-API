@@ -1,18 +1,23 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useSearchParams, Link } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { PageHeader, Async, Button, Tabs, Card, FormModal, ConfirmDialog, Escudo } from '../components/ui'
 import { useGet } from '../api/hooks'
 import { api } from '../api/client'
 import { POSICAO_JOGADOR, posicaoOptions } from '../lib/enums'
-import { calcAge } from '../lib/format'
 import { PartidaItem } from '../components/PartidaItem'
 
 export function TimeDetalhe() {
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
+  // Com ?temporada=ID, as idades são as da data de início da temporada
+  const temporadaId = searchParams.get('temporada')
   const qc = useQueryClient()
   const query = useGet(['time', id], `/times/${id}`)
-  const jogadoresQuery = useGet(['jogadores-time', id], `/jogadores/time/${id}`)
+  const jogadoresQuery = useGet(
+    ['jogadores-time', id, temporadaId],
+    `/jogadores/time/${id}${temporadaId ? `?temporadaId=${temporadaId}` : ''}`,
+  )
   const partidasQuery = useGet(['partidas-time', id], `/times/${id}/partidas`)
 
   const [tab, setTab] = useState('elenco')
@@ -117,7 +122,7 @@ export function TimeDetalhe() {
                                       </p>
                                       <div className="flex gap-3 text-xs text-slate-500">
                                         {j.nacionalidade && <span>{j.nacionalidade}</span>}
-                                        {j.dataNascimento && <span>{calcAge(j.dataNascimento)} anos</span>}
+                                        {j.idade != null && <span>{j.idade} anos</span>}
                                       </div>
                                     </div>
                                     <div className="flex gap-2">

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
 import { Button, Async, Card, ConfirmDialog, FormModal } from '../components/ui'
 import { useGet } from '../api/hooks'
 import { api } from '../api/client'
@@ -35,7 +36,9 @@ export function ParticipacoesPage({ temporadaId }) {
           <div className="space-y-2">
             {data.map((p) => (
               <Card key={p.id} className="flex items-center justify-between p-4">
-                <span className="font-medium text-slate-900">{p.timeNome}</span>
+                <Link to={`/times/${p.timeId}?temporada=${temporadaId}`} className="font-medium text-slate-900 hover:text-red-700 hover:underline">
+                  {p.timeNome}
+                </Link>
                 <Button
                   size="sm"
                   variant="danger"

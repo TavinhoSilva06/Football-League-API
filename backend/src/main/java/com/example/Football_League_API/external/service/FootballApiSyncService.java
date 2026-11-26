@@ -32,6 +32,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -273,18 +274,26 @@ public class FootballApiSyncService {
             }
 
             boolean completo = true;
+            // Um jogador pode ter atuado em mais de um time da liga na temporada; fica com o time onde jogou mais
+            Map<Integer, VinculoJogador> vinculos = new HashMap<>();
+
             for (FootballApiTeamDto teamDto : teams) {
                 if (teamDto.isValid()) {
                     Time time = syncSingleTeam(teamDto, result);
                     result.incrementTimes();
 
                     if (time != null) {
-                        completo &= syncPlayersForTeam(teamDto.getId(), season, time, result);
+                        completo &= coletarJogadoresDoTime(teamDto.getId(), season, leagueId, time, vinculos, result);
                     } else {
                         completo = false;
                     }
                 }
             }
+
+            vinculos.values().forEach(vinculo -> {
+                syncSinglePlayer(vinculo.dto(), vinculo.apiTeamId(), vinculo.time());
+                result.incrementJogadores();
+            });
             return completo;
 
         } catch (FootballApiException e) {
@@ -319,14 +328,18 @@ public class FootballApiSyncService {
         }
     }
 
-    private boolean syncPlayersForTeam(Integer apiTeamId, Integer season, Time time, SyncResult result) {
+    // Registra os jogadores do time no mapa de vínculos; se o jogador já apareceu em outro time, mantém o de mais minutos
+    private boolean coletarJogadoresDoTime(Integer apiTeamId, Integer season, Integer leagueId, Time time,
+                                           Map<Integer, VinculoJogador> vinculos, SyncResult result) {
         try {
             List<FootballApiPlayerDto> players = footballApiClient.getPlayers(apiTeamId, season);
 
             for (FootballApiPlayerDto playerDto : players) {
                 if (playerDto.isValid()) {
-                    syncSinglePlayer(playerDto, apiTeamId, time);
-                    result.incrementJogadores();
+                    int minutos = playerDto.getMinutos(apiTeamId, leagueId);
+                    VinculoJogador candidato = new VinculoJogador(playerDto, apiTeamId, time, minutos);
+                    vinculos.merge(playerDto.getId(), candidato,
+                            (atual, novo) -> novo.minutos() >= atual.minutos() ? novo : atual);
                 }
             }
             return true;
@@ -420,6 +433,9 @@ public class FootballApiSyncService {
 
     // Liga e temporada cujo elenco pode ser sincronizado (ids da API-Football, mais a entidade local)
     private record TeamSyncTarget(Integer leagueId, Integer season, Temporada temporada) {}
+
+    // Vínculo candidato de um jogador com um time, junto com os minutos jogados nesse time
+    private record VinculoJogador(FootballApiPlayerDto dto, Integer apiTeamId, Time time, int minutos) {}
 
     public static class SyncResult {
         private int competicoesSincronizadas = 0;

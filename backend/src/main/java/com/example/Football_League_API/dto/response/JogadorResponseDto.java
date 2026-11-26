@@ -28,4 +28,7 @@ public class JogadorResponseDto {
     private Integer numeroCamisa;
 
     private LocalDate dataNascimento;
+
+    // Idade na data de referência (início da temporada, quando consultado por temporada; senão, hoje)
+    private Integer idade;
 }

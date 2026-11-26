@@ -6,6 +6,9 @@ import com.example.Football_League_API.entity.Jogador;
 import com.example.Football_League_API.entity.Time;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.Period;
+
 /**
  * Responsável pela conversão entre Jogador (entidade JPA) e seus DTOs.
  * Particularidade: Jogador pode estar associado a um Time (nullable) ou sem time.
@@ -36,6 +39,13 @@ public class JogadorMapper {
      * Verifica null no time para evitar NullPointerException em jogadores sem time.
      */
     public JogadorResponseDto toResponseDto(Jogador entity) {
+        return toResponseDto(entity, LocalDate.now());
+    }
+
+    /**
+     * Converte Jogador em DTO de resposta, calculando a idade na data de referência informada.
+     */
+    public JogadorResponseDto toResponseDto(Jogador entity, LocalDate referencia) {
         return JogadorResponseDto.builder()
                 .id(entity.getId())
                 .nome(entity.getNome())
@@ -45,7 +55,15 @@ public class JogadorMapper {
                 .posicao(entity.getPosicao())
                 .numeroCamisa(entity.getNumeroCamisa())
                 .dataNascimento(entity.getDataNascimento())
+                .idade(calcIdade(entity.getDataNascimento(), referencia))
                 .build();
+    }
+
+    private Integer calcIdade(LocalDate nascimento, LocalDate referencia) {
+        if (nascimento == null) {
+            return null;
+        }
+        return Period.between(nascimento, referencia).getYears();
     }
 
     /**
