@@ -26,7 +26,7 @@ export function PalpitesPage({ temporadaId }) {
     return (
       <Card className="p-6 text-center">
         <p className="text-sm text-slate-600">Entre na sua conta para enviar palpites, ganhar pontos e subir de patente.</p>
-        <Link to="/login" className="mt-4 inline-block font-semibold text-red-700 hover:underline">Ir para o login</Link>
+        <Link to="/login" className="mt-4 inline-block font-semibold text-primary-dark hover:underline">Ir para o login</Link>
       </Card>
     )
   }
@@ -120,7 +120,7 @@ export function PalpitesPage({ temporadaId }) {
           </div>
         </div>
         <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
-          <div className="h-full rounded-full bg-gradient-to-r from-red-500 to-red-700" style={{ width: `${progresso}%` }} />
+          <div className="h-full rounded-full bg-gradient-to-r from-primary to-secondary" style={{ width: `${progresso}%` }} />
         </div>
       </Card>
 

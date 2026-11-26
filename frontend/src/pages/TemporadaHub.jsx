@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useSearchParams, Link } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { PageHeader, Async, Button, Tabs, Badge, ConfirmDialog, FormModal, ErrorBox } from '../components/ui'
 import { useGet } from '../api/hooks'
@@ -17,11 +17,12 @@ import { useAuth } from '../AuthContext'
 
 export function TemporadaHub() {
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
   const { user } = useAuth()
   const isAdmin = user?.role === 'ADMIN'
   const qc = useQueryClient()
   const query = useGet(['temporada', id], `/temporadas/${id}`)
-  const [tab, setTab] = useState('classificacao')
+  const [tab, setTab] = useState(() => searchParams.get('aba') === 'palpites' ? 'palpites' : 'classificacao')
   const [showEdit, setShowEdit] = useState(false)
   const [showEncerrar, setShowEncerrar] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
@@ -50,7 +51,7 @@ export function TemporadaHub() {
 
   return (
     <div>
-      <Link to="/campeonatos" className="mb-4 inline-block text-sm text-red-700 hover:underline">← Voltar</Link>
+      <Link to="/campeonatos" className="mb-4 inline-block text-sm text-primary-dark hover:underline">← Voltar</Link>
       <Async query={query}>
         {(temp) => (
           <>

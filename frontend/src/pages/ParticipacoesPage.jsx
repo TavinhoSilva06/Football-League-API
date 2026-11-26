@@ -39,7 +39,7 @@ export function ParticipacoesPage({ temporadaId }) {
               <Card key={p.id} className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3">
                   <Escudo time={{ nome: p.timeNome, escudoUrl: p.timeEscudoUrl ?? escudosPorTime[p.timeId] }} size="sm" />
-                  <Link to={`/times/${p.timeId}?temporada=${temporadaId}`} className="font-medium text-slate-900 hover:text-red-700 hover:underline">
+                  <Link to={`/times/${p.timeId}?temporada=${temporadaId}`} className="font-medium text-slate-900 hover:text-primary-dark hover:underline">
                     {p.timeNome}
                   </Link>
                 </div>

@@ -15,10 +15,10 @@ export function CartõesPage({ temporadaId, limit = 10 }) {
       </div>
       <Async query={query} empty="Nenhum jogador com cartões registrados.">
         {(data) => (
-            <div className="overflow-x-auto">
+            <div className="animate-slide-in delay-1 overflow-x-auto">
               <table className="w-full border-collapse text-sm">
                 <thead>
-                  <tr className="border-b-2 border-red-700 bg-red-50">
+                  <tr className="border-b-2 border-primary bg-primary-light">
                     <th className="px-3 py-2 text-left font-semibold text-slate-900">Jogador</th>
                     <th className="px-3 py-2 text-center font-semibold text-slate-900">Cartões Amarelos</th>
                     <th className="px-3 py-2 text-center font-semibold text-slate-900">Cartões Vermelhos</th>
@@ -27,7 +27,7 @@ export function CartõesPage({ temporadaId, limit = 10 }) {
                 </thead>
                 <tbody>
                   {data.map((row, i) => (
-                    <tr key={row.id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                    <tr key={row.id} className={`transition-colors duration-200 hover:bg-primary-light/60 ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
                       <td className="px-3 py-2">
                         <span className="font-medium text-slate-900">{row.jogadorNome}</span>
                       </td>

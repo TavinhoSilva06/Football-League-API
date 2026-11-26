@@ -6,14 +6,14 @@ export function ClassificacaoPage({ temporadaId }) {
   const query = useGet(['classificacao', temporadaId], `/temporadas/${temporadaId}/classificacao`)
 
   return (
-    <div className="space-y-4 overflow-x-auto">
+    <div className="animate-slide-in space-y-4 overflow-x-auto">
       <Async query={query} empty="Nenhum time inscrito.">
         {(data) => {
           if (!data || data.length === 0) return <EmptyState>Nenhuma classificação disponível.</EmptyState>
           return (
             <table className="w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b-2 border-red-700 bg-red-50">
+                <tr className="border-b-2 border-primary bg-primary-light">
                   <th className="px-3 py-2 text-left font-semibold text-slate-900">#</th>
                   <th className="px-3 py-2 text-left font-semibold text-slate-900">Time</th>
                   <th className="px-3 py-2 text-center font-semibold text-slate-900">Pts</th>
@@ -28,15 +28,15 @@ export function ClassificacaoPage({ temporadaId }) {
               </thead>
               <tbody>
                 {data.map((row, i) => (
-                  <tr key={row.timeId} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                  <tr key={row.timeId} className={`transition-colors duration-200 hover:bg-primary-light/60 ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
                     <td className="px-3 py-2 font-bold text-slate-900">{row.posicao}</td>
                     <td className="px-3 py-2">
-                      <Link to={`/times/${row.timeId}`} className="flex items-center gap-2 text-red-700 hover:underline">
+                      <Link to={`/times/${row.timeId}`} className="flex items-center gap-2 text-primary-dark hover:underline">
                         <Escudo time={{ nome: row.timeNome, escudoUrl: row.timeEscudoUrl }} size="sm" />
                         {row.timeNome}
                       </Link>
                     </td>
-                    <td className="px-3 py-2 text-center font-semibold text-red-700">{row.pontos}</td>
+                    <td className="px-3 py-2 text-center font-semibold text-primary-dark">{row.pontos}</td>
                     <td className="px-3 py-2 text-center">{row.jogos}</td>
                     <td className="px-3 py-2 text-center">{row.vitorias}</td>
                     <td className="px-3 py-2 text-center">{row.empates}</td>

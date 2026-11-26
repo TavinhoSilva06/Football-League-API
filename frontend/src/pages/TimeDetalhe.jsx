@@ -62,7 +62,7 @@ export function TimeDetalhe() {
 
   return (
     <div>
-      <Link to="/times" className="mb-4 inline-block text-sm text-red-700 hover:underline">← Voltar</Link>
+      <Link to="/times" className="mb-4 inline-block text-sm text-primary-dark hover:underline">← Voltar</Link>
       <Async query={query}>
         {(time) => (
           <>
@@ -116,13 +116,13 @@ export function TimeDetalhe() {
                           if (jogadores.length === 0) return null
                           return (
                             <div key={pos}>
-                              <h3 className="mb-3 border-b-2 border-red-700 pb-2 font-semibold text-slate-900">{POSICAO_JOGADOR[pos]}</h3>
+                              <h3 className="mb-3 border-b-2 border-primary pb-2 font-semibold text-slate-900">{POSICAO_JOGADOR[pos]}</h3>
                               <div className="space-y-2">
                                 {jogadores.map((j) => (
                                   <Card key={j.id} className="flex items-center justify-between p-4">
                                     <div className="flex-1">
                                       <p className="font-medium text-slate-900">
-                                        {j.numeroCamisa && <span className="mr-2 inline-block h-6 w-6 rounded-full bg-red-700 text-center text-xs font-bold text-white">{j.numeroCamisa}</span>}
+                                        {j.numeroCamisa && <span className="mr-2 inline-block h-6 w-6 rounded-full brand-gradient animate-gradient text-center text-xs font-bold text-white">{j.numeroCamisa}</span>}
                                         {j.nome}
                                       </p>
                                       <div className="flex gap-3 text-xs text-slate-500">

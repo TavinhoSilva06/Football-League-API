@@ -16,7 +16,7 @@ export function ResultadosPalpitesPage({ temporadaId }) {
     return (
       <Card className="p-6 text-center">
         <p className="text-sm text-slate-600">Entre na sua conta para ver o histórico dos seus palpites.</p>
-        <Link to="/login" className="mt-4 inline-block font-semibold text-red-700 hover:underline">Ir para o login</Link>
+        <Link to="/login" className="mt-4 inline-block font-semibold text-primary-dark hover:underline">Ir para o login</Link>
       </Card>
     )
   }

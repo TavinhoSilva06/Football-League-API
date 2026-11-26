@@ -12,7 +12,7 @@ const statusColors = {
 
 export function PartidaItem({ partida, escudoMandante, escudoVisitante, onResultado, onEdit, onDelete }) {
   return (
-    <div className="group flex flex-col gap-3 rounded-xl border border-slate-200 bg-gradient-to-br from-white to-slate-50/50 p-4 shadow-sm hover:shadow-lg hover:border-red-300 transition-all duration-300 sm:flex-row sm:items-center sm:justify-between">
+    <div className="group flex flex-col gap-3 rounded-xl border border-slate-200 bg-gradient-to-br from-white to-slate-50/50 p-4 shadow-sm hover:shadow-lg hover:border-primary/30 transition-all duration-300 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-1 items-center justify-between gap-2 sm:gap-4">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="transform transition-transform duration-300 group-hover:scale-110">
@@ -22,7 +22,7 @@ export function PartidaItem({ partida, escudoMandante, escudoVisitante, onResult
         </div>
         <div className="shrink-0 text-center">
           {partida.status === 'FINALIZADA' ? (
-            <div className="text-xl font-bold text-red-700 drop-shadow-sm">
+            <div className="text-xl font-bold text-primary drop-shadow-sm">
               {partida.golsMandante} <span className="text-slate-400">×</span> {partida.golsVisitante}
             </div>
           ) : (
@@ -42,7 +42,7 @@ export function PartidaItem({ partida, escudoMandante, escudoVisitante, onResult
           <button
             type="button"
             onClick={() => onResultado(partida)}
-            className="text-xs font-semibold text-red-700 hover:text-white hover:bg-red-700 px-3 py-1.5 rounded-lg transition-all duration-200"
+            className="text-xs font-semibold text-primary hover:text-white hover:bg-primary-dark px-3 py-1.5 rounded-lg transition-all duration-200"
           >
             {partida.status === 'FINALIZADA' ? '✏️ Corrigir' : '⚡ Resultado'}
           </button>

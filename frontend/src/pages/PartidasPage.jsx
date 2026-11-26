@@ -92,7 +92,7 @@ export function PartidasPage({ temporadaId }) {
             <div className="space-y-6">
               {Object.entries(byRodada).map(([rodada, partidas]) => (
                 <div key={rodada}>
-                  <h3 className="mb-3 border-b-2 border-red-700 pb-2 font-semibold text-slate-900">Rodada {rodada}</h3>
+                  <h3 className="mb-3 border-b-2 border-primary pb-2 font-semibold text-slate-900">Rodada {rodada}</h3>
                   <div className="space-y-2">
                     {partidas.map((p) => (
                       <PartidaItem

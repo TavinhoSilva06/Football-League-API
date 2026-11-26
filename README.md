@@ -1,16 +1,16 @@
-   # Football League API
+   # Chute Certo · Palpite Manager
 
-Uma **plataforma completa de gerenciamento de competições de futebol** com API REST em Java/Spring Boot + Frontend React profissional.
+ Uma **plataforma completa de gerenciamento de competições de futebol** com API REST em Java/Spring Boot + Frontend React profissional. O nome comercial do projeto é **Chute Certo**; o diretório/repositório mantém `Football-League-API` por compatibilidade.
 
-## 📋 Sobre o Projeto
+ ## 📋 Sobre o Projeto
 
-O **Football League API** é um projeto acadêmico desenvolvido como parte do curso de Engenharia de Software na **FATEC-PG**, com foco em aplicar padrões de arquitetura, design patterns e boas práticas de desenvolvimento full-stack.
+ O **Chute Certo** é um projeto acadêmico desenvolvido como parte do curso de Engenharia de Software na **FATEC-PG**, com foco em aplicar padrões de arquitetura, design patterns e boas práticas de desenvolvimento full-stack.
 
 ### Funcionalidades
 
 #### 🎮 Frontend (React + Vite + Tailwind CSS)
-- ✅ Interface moderna e responsiva com tema vermelho/branco
-- ✅ Navegação intuitiva: Campeonatos → Temporadas → Partidas
+- ✅ Interface moderna e responsiva com sidebar fixa, topbar sticky, tema branco/azul e animações
+- ✅ Navegação intuitiva: Palpites, Campeonatos → Temporadas → Partidas
 - ✅ Gerenciamento completo de times e elencos
 - ✅ Animações suaves e efeitos visuais profissionais
 - ✅ Validação de formulários com feedback de erro por campo
@@ -375,8 +375,8 @@ Também existe `backend/.env.example` com todas as variáveis.
 | **Cadastro** | `/register` | Criar conta `USER` |
 
 **Toda interface construída com Tailwind CSS:**
-- Tema: vermelho `#b91c1c` + branco
-- Animações: fade-in, hover suave, escala em clique
+- Tema: branco + azul (`#2563eb` → `#0ea5e9`), vermelho reservado para erros/ações de exclusão
+- Animações: fade-in, slide-in, pop-in, float, gradient-shift, hover e escala em clique
 - Responsivo: funciona em mobile, tablet, desktop
 - Acessível: teclado, screen reader friendly
 
@@ -439,12 +439,13 @@ Cada tela tem documentação detalhada:
 
 ## ✨ Design & Animações
 
-- **Cores**: Gradientes vermelho (red-600 → red-700), sombras dinâmicas
-- **Botões**: Efeito `active:scale-95`, shadow-lg no hover, transição 200ms
-- **Cards**: Backdrop blur, hover:shadow-lg, border-red-300 ao passar o mouse
-- **Modais**: Fade-in, backdrop blur, header com gradiente
-- **Spinners**: Dupla camada de animação
-- **Inputs**: Focus ring, transição suave, disabled states
+- **Cores**: Fundo branco, gradientes azuis (`#2563eb` → `#0ea5e9`), orbes decorativos animados
+- **Botões**: Gradiente animado, `hover:-translate-y-0.5`, shadow colorida, `active:scale-95`
+- **Cards**: Bordas suaves, hover com elevação e sombra azul, entrada com fade-in
+- **Tabs**: Pílulas com transição e destaque animado
+- **Modais**: Fade-in, backdrop blur, header com gradiente e pop-in
+- **Spinners**: Camadas duplas com rotação e pulso
+- **Inputs**: Focus ring azul, hover suave, disabled states
 
 ---
 

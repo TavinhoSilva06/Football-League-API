@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { CampeonatosPage } from './pages/CampeonatosPage'
 import { CampeonatoDetalhe } from './pages/CampeonatoDetalhe'
+import { PalpitesDashboardPage } from './pages/PalpitesDashboardPage'
 import { TemporadasListPage } from './pages/TemporadasListPage'
 import { TemporadaHub } from './pages/TemporadaHub'
 import { TimesPage } from './pages/TimesPage'
@@ -16,6 +17,8 @@ export default function App() {
         <Route path="/campeonatos" element={<CampeonatosPage />} />
         <Route path="/campeonatos/:campeonatoId/temporadas" element={<TemporadasListPage />} />
         <Route path="/campeonatos/:id" element={<CampeonatoDetalhe />} />
+        <Route path="/palpites" element={<PalpitesDashboardPage />} />
+        <Route path="/temporadas" element={<Navigate to="/campeonatos" replace />} />
         <Route path="/temporadas/:id/*" element={<TemporadaHub />} />
         <Route path="/times" element={<TimesPage />} />
         <Route path="/times/:id" element={<TimeDetalhe />} />

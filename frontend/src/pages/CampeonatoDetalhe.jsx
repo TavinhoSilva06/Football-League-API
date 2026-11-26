@@ -30,7 +30,7 @@ export function CampeonatoDetalhe() {
 
   return (
     <div>
-      <Link to="/campeonatos" className="mb-4 inline-block text-sm text-red-700 hover:underline">← Voltar</Link>
+      <Link to="/campeonatos" className="mb-4 inline-block text-sm text-primary-dark hover:underline">← Voltar</Link>
       <Async query={query}>
         {(camp) => (
           <>
@@ -63,7 +63,7 @@ export function CampeonatoDetalhe() {
                     <div className="grid gap-3 md:grid-cols-2">
                       {data.map((t) => (
                         <Link key={t.id} to={`/times/${t.id}`}>
-                          <Card className="hover:border-red-300 hover:shadow-lg transition-all duration-300 cursor-pointer">
+                          <Card className="hover:border-primary/30 hover:shadow-lg transition-all duration-300 cursor-pointer">
                             <div className="p-4">
                               <h3 className="font-semibold text-slate-900">{t.nome}</h3>
                               {t.cidade && <p className="text-sm text-slate-500 mt-1">{t.cidade}</p>}
