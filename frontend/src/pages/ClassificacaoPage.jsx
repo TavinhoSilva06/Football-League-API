@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Async, EmptyState } from '../components/ui'
+import { Async, EmptyState, Escudo } from '../components/ui'
 import { useGet } from '../api/hooks'
 
 export function ClassificacaoPage({ temporadaId }) {
@@ -31,7 +31,8 @@ export function ClassificacaoPage({ temporadaId }) {
                   <tr key={row.timeId} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                     <td className="px-3 py-2 font-bold text-slate-900">{row.posicao}</td>
                     <td className="px-3 py-2">
-                      <Link to={`/times/${row.timeId}`} className="text-red-700 hover:underline">
+                      <Link to={`/times/${row.timeId}`} className="flex items-center gap-2 text-red-700 hover:underline">
+                        <Escudo time={{ nome: row.timeNome, escudoUrl: row.timeEscudoUrl }} size="sm" />
                         {row.timeNome}
                       </Link>
                     </td>

@@ -21,6 +21,8 @@ public class ClassificacaoEntradaDto {
 
     private String timeNome; // Nome do time para exibição
 
+    private String timeEscudoUrl; // URL do escudo do time
+
     private Integer jogos; // Número de partidas jogadas
 
     private Integer vitorias; // Vitórias

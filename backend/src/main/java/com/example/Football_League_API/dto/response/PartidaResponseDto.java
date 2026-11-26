@@ -25,9 +25,13 @@ public class PartidaResponseDto {
 
     private String timeMandanteNome;
 
+    private String timeMandanteEscudoUrl;
+
     private Long timeVisitanteId;
 
     private String timeVisitanteNome;
+
+    private String timeVisitanteEscudoUrl;
 
     private Integer golsMandante;
 

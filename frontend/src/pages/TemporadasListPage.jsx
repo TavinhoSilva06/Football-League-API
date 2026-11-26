@@ -6,10 +6,13 @@ import { useGet } from '../api/hooks'
 import { api } from '../api/client'
 import { STATUS_TEMPORADA, statusTemporadaOptions } from '../lib/enums'
 import { formatDate } from '../lib/format'
+import { useAuth } from '../AuthContext'
 
 export function TemporadasListPage() {
   const { campeonatoId } = useParams()
   const qc = useQueryClient()
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'ADMIN'
   const campQuery = useGet(['campeonato', campeonatoId], `/campeonatos/${campeonatoId}`)
   const query = useGet(['campeonato-temporadas', campeonatoId], `/campeonatos/${campeonatoId}/temporadas`)
   const [showForm, setShowForm] = useState(false)
@@ -45,7 +48,7 @@ export function TemporadasListPage() {
             <PageHeader
               title={`Temporadas de ${camp.nome}`}
               subtitle={camp.pais}
-              actions={[<Button key="new" onClick={() => { setEditing(null); setShowForm(true) }}>Nova Temporada</Button>]}
+              actions={isAdmin ? [<Button key="new" onClick={() => { setEditing(null); setShowForm(true) }}>Nova Temporada</Button>] : []}
             />
 
             <Async query={query} empty="Nenhuma temporada neste campeonato. Crie uma para começar!">
@@ -67,10 +70,12 @@ export function TemporadasListPage() {
                             <Badge color={t.status === 'ENCERRADA' ? 'slate' : t.status === 'EM_ANDAMENTO' ? 'green' : 'amber'}>
                               {STATUS_TEMPORADA[t.status]}
                             </Badge>
-                            <div className="flex gap-2">
-                              <Button size="sm" variant="secondary" onClick={(e) => { e.preventDefault(); setEditing(t); setShowForm(true) }}>Editar</Button>
-                              <Button size="sm" variant="danger" onClick={(e) => { e.preventDefault(); setShowDelete(t) }}>Excluir</Button>
-                            </div>
+                            {isAdmin && (
+                              <div className="flex gap-2">
+                                <Button size="sm" variant="secondary" onClick={(e) => { e.preventDefault(); setEditing(t); setShowForm(true) }}>Editar</Button>
+                                <Button size="sm" variant="danger" onClick={(e) => { e.preventDefault(); setShowDelete(t) }}>Excluir</Button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </Card>

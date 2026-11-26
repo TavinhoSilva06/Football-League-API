@@ -10,13 +10,13 @@ const statusColors = {
   CANCELADA: 'red',
 }
 
-export function PartidaItem({ partida, onResultado, onEdit, onDelete }) {
+export function PartidaItem({ partida, escudoMandante, escudoVisitante, onResultado, onEdit, onDelete }) {
   return (
     <div className="group flex flex-col gap-3 rounded-xl border border-slate-200 bg-gradient-to-br from-white to-slate-50/50 p-4 shadow-sm hover:shadow-lg hover:border-red-300 transition-all duration-300 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-1 items-center justify-between gap-2 sm:gap-4">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="transform transition-transform duration-300 group-hover:scale-110">
-            <Escudo time={{ nome: partida.timeMandanteNome, sigla: partida.timeMandanteNome.slice(0, 3) }} size="sm" />
+            <Escudo time={{ nome: partida.timeMandanteNome, escudoUrl: escudoMandante ?? partida.timeMandanteEscudoUrl }} size="sm" />
           </div>
           <div className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-900">{partida.timeMandanteNome}</div>
         </div>
@@ -32,7 +32,7 @@ export function PartidaItem({ partida, onResultado, onEdit, onDelete }) {
         <div className="flex min-w-0 flex-1 items-center justify-end gap-3">
           <div className="min-w-0 flex-1 truncate text-right text-sm font-semibold text-slate-900">{partida.timeVisitanteNome}</div>
           <div className="transform transition-transform duration-300 group-hover:scale-110">
-            <Escudo time={{ nome: partida.timeVisitanteNome, sigla: partida.timeVisitanteNome.slice(0, 3) }} size="sm" />
+            <Escudo time={{ nome: partida.timeVisitanteNome, escudoUrl: escudoVisitante ?? partida.timeVisitanteEscudoUrl }} size="sm" />
           </div>
         </div>
       </div>

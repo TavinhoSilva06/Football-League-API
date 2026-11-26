@@ -11,9 +11,14 @@ import { ClassificacaoPage } from './ClassificacaoPage'
 import { ArtilhariaPage } from './ArtilhariaPage'
 import { AssistenciasPage } from './AssistenciasPage'
 import { CartõesPage } from './CartõesPage'
+import { PalpitesPage } from './PalpitesPage'
+import { ResultadosPalpitesPage } from './ResultadosPalpitesPage'
+import { useAuth } from '../AuthContext'
 
 export function TemporadaHub() {
   const { id } = useParams()
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'ADMIN'
   const qc = useQueryClient()
   const query = useGet(['temporada', id], `/temporadas/${id}`)
   const [tab, setTab] = useState('classificacao')
@@ -52,11 +57,11 @@ export function TemporadaHub() {
             <PageHeader
               title={temp.nome}
               subtitle={`Rodadas: ${temp.numRodadas || '—'}`}
-              actions={[
+              actions={isAdmin ? [
                 <Button key="edit" size="sm" onClick={() => setShowEdit(true)}>Editar</Button>,
                 temp.status !== 'ENCERRADA' && <Button key="enc" size="sm" variant="secondary" onClick={() => setShowEncerrar(true)}>Encerrar</Button>,
                 <Button key="del" size="sm" variant="danger" onClick={() => setShowDelete(true)}>Excluir</Button>,
-              ]}
+              ] : []}
             />
             <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex gap-2">
@@ -73,6 +78,8 @@ export function TemporadaHub() {
               tabs={[
                 { label: 'Classificação', value: 'classificacao' },
                 { label: 'Partidas', value: 'partidas' },
+                { label: 'Palpites', value: 'palpites' },
+                { label: 'Meus Resultados', value: 'resultados' },
                 { label: 'Artilharia', value: 'artilharia' },
                 { label: 'Assistências', value: 'assistencias' },
                 { label: 'Cartões', value: 'cartoes' },
@@ -84,6 +91,8 @@ export function TemporadaHub() {
 
             {tab === 'classificacao' && <ClassificacaoPage temporadaId={id} />}
             {tab === 'partidas' && <PartidasPage temporadaId={id} />}
+            {tab === 'palpites' && <PalpitesPage temporadaId={id} />}
+            {tab === 'resultados' && <ResultadosPalpitesPage temporadaId={id} />}
             {tab === 'artilharia' && <ArtilhariaPage temporadaId={id} />}
             {tab === 'assistencias' && <AssistenciasPage temporadaId={id} />}
             {tab === 'cartoes' && <CartõesPage temporadaId={id} />}

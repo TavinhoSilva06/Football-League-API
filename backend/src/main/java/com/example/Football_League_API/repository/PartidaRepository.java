@@ -5,10 +5,13 @@ import com.example.Football_League_API.enu.StatusPartida;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PartidaRepository extends JpaRepository<Partida, Long> {
     List<Partida> findByTemporadaId(Long temporadaId);
+
+    Optional<Partida> findFirstByTemporadaIdAndStatusOrderByRodadaAsc(Long temporadaId, StatusPartida status);
     List<Partida> findByTemporadaIdAndRodada(Long temporadaId, Integer rodada);
     List<Partida> findByTemporadaIdAndStatus(Long temporadaId, StatusPartida status);
     List<Partida> findByTemporadaIdAndRodadaAndStatus(Long temporadaId, Integer rodada, StatusPartida status);

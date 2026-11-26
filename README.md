@@ -16,6 +16,8 @@ O **Football League API** é um projeto acadêmico desenvolvido como parte do cu
 - ✅ Validação de formulários com feedback de erro por campo
 - ✅ Cache inteligente com React Query
 - ✅ Proxy Vite resolvendo CORS automaticamente
+- ✅ Login/cadastro com JWT e perfil `USER`/`ADMIN`
+- ✅ Aba de palpites com placar exato, pontos e patente
 
 #### 🔧 API REST (Spring Boot)
 - ✅ Cadastro e gerenciamento de campeonatos
@@ -27,6 +29,8 @@ O **Football League API** é um projeto acadêmico desenvolvido como parte do cu
 - ✅ **Rankings de artilharia e assistências** em tempo real
 - ✅ 50+ endpoints RESTful totalmente implementados
 - ✅ Validação robusta com mensagens em português
+- ✅ Autenticação JWT com perfis `USER`/`ADMIN` e seed de administrador
+- ✅ Simulação de rodada com premiação automática de palpites e patentes
 
 ## 🏗️ Arquitetura
 
@@ -47,10 +51,11 @@ Football-League-API/
 │
 ├── frontend/                         # React + Vite
 │   ├── src/
-│   │   ├── pages/                   # 7 páginas (Campeonatos, Temporadas, Times, etc)
+│   │   ├── pages/                   # Campeonatos, Temporadas, Times, Login, Palpites
 │   │   ├── components/              # UI reutilizáveis + Layout
 │   │   ├── api/                     # Cliente axios + hooks React Query
-│   │   ├── lib/                     # Utilitários (enums, formatação)
+│   │   ├── AuthContext.jsx          # Sessão JWT
+│   │   ├── lib/                     # Utilitários (enums, formatação, patentes)
 │   │   ├── App.jsx                  # Roteador principal
 │   │   └── index.css                # Tailwind + animações
 │   ├── docs/                         # Documentação de cada tela
@@ -207,6 +212,44 @@ npm run dev
 
 ---
 
+## 🔐 Autenticação, Perfis e Palpites
+
+- Cadastro público (`POST /auth/register`) cria usuários com perfil `USER`.
+- Login (`POST /auth/login`) retorna token JWT; `GET /auth/me` retorna o perfil atual.
+- `ADMIN` faz CRUD de campeonatos, temporadas, times e partidas; `USER` pode palpitar e simular rodadas.
+- Administrador inicial criado por `AdminSeeder` com `app.admin.*` (sobrescrito por `ADMIN_NOME`, `ADMIN_EMAIL` e `ADMIN_PASSWORD`).
+
+### Variáveis de ambiente
+
+```powershell
+$env:ADMIN_NOME = "Admin"
+$env:ADMIN_EMAIL = "admin@footballleague.com"
+$env:ADMIN_PASSWORD = "admin123"
+$env:JWT_SECRET = "troque-por-uma-chave-longa-e-segura"
+$env:JWT_EXPIRATION_MS = "86400000"
+```
+
+Também existe `backend/.env.example` com todas as variáveis.
+
+### Regras de palpites
+
+- A rodada atual é a menor rodada que ainda tem partida `AGENDADA`.
+- O acerto exige **placar exato**; cada acerto vale pontos conforme a patente do usuário no início da avaliação:
+
+| Patente | Pontos por acerto | Limite |
+|---------|-------------------|--------|
+| Bronze | 20 | 0 |
+| Prata | 18 | 1.000 |
+| Ouro | 16 | 2.000 |
+| Platina | 14 | 3.000 |
+| Diamante | 12 | 4.000 |
+| Perito | 10 | 5.000+ |
+
+- A simulação (`POST /temporadas/{temporadaId}/rodadas/{rodada}/simular`) sorteia os placares, finaliza a rodada e premia os palpites uma única vez.
+- Depois da simulação os palpites ficam bloqueados.
+
+---
+
 ## 🎯 Fluxo de Uso (Frontend)
 
 1. **Navegação**: `Campeonatos` → selecione um campeonato
@@ -228,6 +271,9 @@ npm run dev
    - Aba "Cartões" → Jogadores com cartões (amarelos + vermelhos) 🟨🟥
 9. **Ver Classificação**: Aba "Classificação" → tabela automática com desempate!
 10. **Times**: Gerenciar elencos, ver jogadores por posição
+11. **Palpites**: Entre na conta, abra a aba "Palpites", envie placares e simule a rodada
+    - Acerto apenas com placar exato
+    - Pontos e patente atualizados automaticamente após a simulação
 
 ---
 
@@ -289,12 +335,22 @@ npm run dev
 - `GET /partidas/{id}/eventos/{eventoId}` — Detalhe de um evento
 - `DELETE /partidas/{id}/eventos/{eventoId}` — Remover evento
 
-### Estatísticas (5)
+### Estatísticas (6)
 - `GET /estatisticas/temporadas/{id}/artilharia?limit=10` — Top goleadores
 - `GET /estatisticas/temporadas/{id}/assistencias?limit=10` — Top assistentes
+- `GET /estatisticas/temporadas/{id}/cartoes?limit=10` — Top jogadores com cartões
 - `GET /estatisticas/temporadas/{id}` — Todas as estatísticas
 - `GET /estatisticas/jogadores/{id}?temporadaId=` — Estatísticas de um jogador
 - `PUT /estatisticas/jogadores/{id}?temporadaId=` — Criar/atualizar estatísticas
+
+### Autenticação e Palpites (7)
+- `POST /auth/register` — Cadastrar usuário (`USER`)
+- `POST /auth/login` — Login com token JWT
+- `GET /auth/me` — Perfil autenticado (pontos, patente, role)
+- `GET /temporadas/{temporadaId}/palpites/rodada-atual` — Jogos e palpites da rodada atual
+- `GET /temporadas/{temporadaId}/palpites/resultados` — Histórico de acertos por rodada
+- `POST /palpites` — Criar/atualizar palpite
+- `POST /temporadas/{temporadaId}/rodadas/{rodada}/simular` — Simular e premiar rodada
 
 ---
 
@@ -305,14 +361,18 @@ npm run dev
 | **Campeonatos** | `/campeonatos` | Lista, criar, editar, excluir |
 | **Detalhe Campeonato** | `/campeonatos/:id` | Ver times, botão para gerenciar temporadas |
 | **Temporadas** | `/campeonatos/:id/temporadas` | Lista, criar, editar, excluir temporadas |
-| **Hub Temporada** | `/temporadas/:id` | 6 abas: Classificação, Partidas, Artilharia, Assistências, Cartões, Times Inscritos |
-| **Partidas** | Aba em Temporada | Criar, editar, registrar resultado, filtros |
+| **Hub Temporada** | `/temporadas/:id` | 8 abas: Classificação, Partidas, Palpites, Meus Resultados, Artilharia, Assistências, Cartões, Times Inscritos |
+| **Partidas** | Aba em Temporada | Criar, editar, registrar resultado, filtros (somente ADMIN), escudos |
+| **Palpites** | Aba em Temporada | Enviar placares, simular rodada, ver pontos/patente e acertos |
+| **Meus Resultados** | Aba em Temporada | Histórico de acertos e erros por rodada simulada |
 | **Artilharia** | Aba em Temporada | Top goleadores (apenas com gols > 0): gols, jogos, média |
 | **Assistências** | Aba em Temporada | Top assistentes (apenas com asst > 0): assistências, jogos, média |
 | **Cartões** | Aba em Temporada | Jogadores com cartões (apenas com cartões > 0): amarelos, vermelhos, total |
 | **Classificação** | Aba em Temporada | Tabela automática, desempate 5 critérios |
 | **Times** | `/times` | Lista, criar, editar, excluir |
 | **Detalhe Time** | `/times/:id` | 2 abas: Elenco (jogadores por posição), Jogos |
+| **Login** | `/login` | Entrar com e-mail/senha |
+| **Cadastro** | `/register` | Criar conta `USER` |
 
 **Toda interface construída com Tailwind CSS:**
 - Tema: vermelho `#b91c1c` + branco
@@ -422,5 +482,5 @@ MIT License — Veja [LICENSE](LICENSE) para detalhes.
 
 ---
 
-**Última atualização**: 2026-10-06 (Versão Final)  
-**Status**: ✅ Nível 3 100% Completo (Backend + Frontend Profissional + Eventos + Rankings + Cartões)
+**Última atualização**: 2026-11-26<br>
+**Status**: ✅ Nível 3 100% Completo + Autenticação JWT, Perfis, Simulação de Rodada, Palpites e Patentes

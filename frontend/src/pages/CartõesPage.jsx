@@ -1,24 +1,20 @@
-import { Async, EmptyState, Badge } from '../components/ui'
+import { Async, Badge } from '../components/ui'
 import { useGet } from '../api/hooks'
 
-export function CartõesPage({ temporadaId }) {
-  const query = useGet(['estatisticas', temporadaId], `/estatisticas/temporadas/${temporadaId}`)
+export function CartõesPage({ temporadaId, limit = 10 }) {
+  const query = useGet(
+    ['cartoes', temporadaId, limit],
+    `/estatisticas/temporadas/${temporadaId}/cartoes?limit=${limit}`,
+    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false },
+  )
 
   return (
     <div className="space-y-4">
       <div className="mb-4 text-sm text-slate-600">
-        Jogadores com cartões na temporada
+        Top {limit} jogadores com cartões na temporada
       </div>
-      <Async query={query} empty={`Nenhuma estatística disponível.`}>
-        {(data) => {
-          if (!data || data.length === 0) return <EmptyState>Nenhuma estatística de cartões registrada.</EmptyState>
-
-          // Filtrar apenas jogadores com cartões
-          const comCartoes = data.filter(row => row.cartoesAmarelos > 0 || row.cartoesVermelhos > 0)
-
-          if (comCartoes.length === 0) return <EmptyState>Nenhum jogador com cartões registrados.</EmptyState>
-
-          return (
+      <Async query={query} empty="Nenhum jogador com cartões registrados.">
+        {(data) => (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm">
                 <thead>
@@ -30,7 +26,7 @@ export function CartõesPage({ temporadaId }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {comCartoes.map((row, i) => (
+                  {data.map((row, i) => (
                     <tr key={row.id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                       <td className="px-3 py-2">
                         <span className="font-medium text-slate-900">{row.jogadorNome}</span>
@@ -57,8 +53,7 @@ export function CartõesPage({ temporadaId }) {
                 </tbody>
               </table>
             </div>
-          )
-        }}
+        )}
       </Async>
     </div>
   )

@@ -2,7 +2,11 @@ import { Async, EmptyState, Badge } from '../components/ui'
 import { useGet } from '../api/hooks'
 
 export function ArtilhariaPage({ temporadaId, limit = 10 }) {
-  const query = useGet(['artilharia', temporadaId, limit], `/estatisticas/temporadas/${temporadaId}/artilharia?limit=${limit}`)
+  const query = useGet(
+    ['artilharia', temporadaId, limit],
+    `/estatisticas/temporadas/${temporadaId}/artilharia?limit=${limit}`,
+    { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false },
+  )
 
   return (
     <div className="space-y-4">

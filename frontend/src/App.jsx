@@ -6,6 +6,7 @@ import { TemporadasListPage } from './pages/TemporadasListPage'
 import { TemporadaHub } from './pages/TemporadaHub'
 import { TimesPage } from './pages/TimesPage'
 import { TimeDetalhe } from './pages/TimeDetalhe'
+import { LoginPage } from './pages/LoginPage'
 
 export default function App() {
   return (
@@ -18,6 +19,8 @@ export default function App() {
         <Route path="/temporadas/:id/*" element={<TemporadaHub />} />
         <Route path="/times" element={<TimesPage />} />
         <Route path="/times/:id" element={<TimeDetalhe />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<LoginPage />} />
         <Route path="*" element={<div className="text-center py-10"><h1 className="text-2xl font-bold">Página não encontrada</h1></div>} />
       </Routes>
     </Layout>

@@ -4,9 +4,12 @@ import { useQueryClient } from '@tanstack/react-query'
 import { PageHeader, Card, Button, Async, FormModal, ConfirmDialog, Escudo } from '../components/ui'
 import { useGet } from '../api/hooks'
 import { api } from '../api/client'
+import { useAuth } from '../AuthContext'
 
 export function TimesPage() {
   const qc = useQueryClient()
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'ADMIN'
   const query = useGet(['times'], '/times')
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState(null)
@@ -37,7 +40,7 @@ export function TimesPage() {
       <PageHeader
         title="Times"
         subtitle="Gerencie todos os times"
-        actions={[<Button key="new" onClick={() => { setEditing(null); setShowForm(true) }}>Novo Time</Button>]}
+        actions={isAdmin ? [<Button key="new" onClick={() => { setEditing(null); setShowForm(true) }}>Novo Time</Button>] : []}
       />
       <Async query={query} empty="Nenhum time criado ainda.">
         {(data) => (
@@ -55,10 +58,12 @@ export function TimesPage() {
                     </div>
                     {t.cidade && <p className="text-sm text-slate-600">{t.cidade}</p>}
                     {t.estadio && <p className="text-xs text-slate-500">{t.estadio}</p>}
-                    <div className="flex gap-2 pt-2">
-                      <Button size="sm" variant="secondary" onClick={(e) => { e.preventDefault(); setEditing(t); setShowForm(true) }}>Editar</Button>
-                      <Button size="sm" variant="danger" onClick={(e) => { e.preventDefault(); setShowDelete(t) }}>Excluir</Button>
-                    </div>
+                    {isAdmin && (
+                      <div className="flex gap-2 pt-2">
+                        <Button size="sm" variant="secondary" onClick={(e) => { e.preventDefault(); setEditing(t); setShowForm(true) }}>Editar</Button>
+                        <Button size="sm" variant="danger" onClick={(e) => { e.preventDefault(); setShowDelete(t) }}>Excluir</Button>
+                      </div>
+                    )}
                   </div>
                 </Card>
               </Link>

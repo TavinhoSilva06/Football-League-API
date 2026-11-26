@@ -6,6 +6,7 @@ import { useGet } from '../api/hooks'
 import { api } from '../api/client'
 import { POSICAO_JOGADOR, posicaoOptions } from '../lib/enums'
 import { PartidaItem } from '../components/PartidaItem'
+import { useAuth } from '../AuthContext'
 
 export function TimeDetalhe() {
   const { id } = useParams()
@@ -13,6 +14,8 @@ export function TimeDetalhe() {
   // Com ?temporada=ID, as idades são as da data de início da temporada
   const temporadaId = searchParams.get('temporada')
   const qc = useQueryClient()
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'ADMIN'
   const query = useGet(['time', id], `/times/${id}`)
   const jogadoresQuery = useGet(
     ['jogadores-time', id, temporadaId],
@@ -66,10 +69,10 @@ export function TimeDetalhe() {
             <PageHeader
               title={time.nome}
               subtitle={time.cidade || time.pais}
-              actions={[
+              actions={isAdmin ? [
                 <Button key="edit" size="sm" onClick={() => setShowEditTime(true)}>Editar</Button>,
                 <Button key="del" size="sm" variant="danger" onClick={() => setShowDeleteTime(true)}>Excluir</Button>,
-              ]}
+              ] : []}
             />
 
             <div className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
@@ -92,9 +95,11 @@ export function TimeDetalhe() {
 
             {tab === 'elenco' && (
               <div className="space-y-4">
-                <div className="flex justify-end">
-                  <Button size="sm" onClick={() => setShowAddJogador(true)}>Adicionar Jogador</Button>
-                </div>
+                {isAdmin && (
+                  <div className="flex justify-end">
+                    <Button size="sm" onClick={() => setShowAddJogador(true)}>Adicionar Jogador</Button>
+                  </div>
+                )}
                 <Async query={jogadoresQuery} empty="Nenhum jogador neste time.">
                   {(jogadores) => {
                     const byPosicao = {}
@@ -125,10 +130,12 @@ export function TimeDetalhe() {
                                         {j.idade != null && <span>{j.idade} anos</span>}
                                       </div>
                                     </div>
-                                    <div className="flex gap-2">
-                                      <Button size="sm" variant="secondary" onClick={() => setEditingJogador(j)}>Editar</Button>
-                                      <Button size="sm" variant="danger" onClick={() => setShowDeleteJogador(j)}>Excluir</Button>
-                                    </div>
+                                    {isAdmin && (
+                                      <div className="flex gap-2">
+                                        <Button size="sm" variant="secondary" onClick={() => setEditingJogador(j)}>Editar</Button>
+                                        <Button size="sm" variant="danger" onClick={() => setShowDeleteJogador(j)}>Excluir</Button>
+                                      </div>
+                                    )}
                                   </Card>
                                 ))}
                               </div>

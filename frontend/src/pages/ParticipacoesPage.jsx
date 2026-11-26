@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { Button, Async, Card, ConfirmDialog, FormModal } from '../components/ui'
+import { Button, Async, Card, ConfirmDialog, Escudo, FormModal } from '../components/ui'
 import { useGet } from '../api/hooks'
 import { api } from '../api/client'
 
@@ -9,6 +9,7 @@ export function ParticipacoesPage({ temporadaId }) {
   const qc = useQueryClient()
   const participacoesQuery = useGet(['participacoes', temporadaId], `/temporadas/${temporadaId}/participacoes`)
   const timesQuery = useGet(['times'], '/times')
+  const escudosPorTime = Object.fromEntries((timesQuery.data ?? []).map((time) => [time.id, time.escudoUrl]))
   const [showAdd, setShowAdd] = useState(false)
   const [showDelete, setShowDelete] = useState(null)
 
@@ -36,9 +37,12 @@ export function ParticipacoesPage({ temporadaId }) {
           <div className="space-y-2">
             {data.map((p) => (
               <Card key={p.id} className="flex items-center justify-between p-4">
-                <Link to={`/times/${p.timeId}?temporada=${temporadaId}`} className="font-medium text-slate-900 hover:text-red-700 hover:underline">
-                  {p.timeNome}
-                </Link>
+                <div className="flex items-center gap-3">
+                  <Escudo time={{ nome: p.timeNome, escudoUrl: p.timeEscudoUrl ?? escudosPorTime[p.timeId] }} size="sm" />
+                  <Link to={`/times/${p.timeId}?temporada=${temporadaId}`} className="font-medium text-slate-900 hover:text-red-700 hover:underline">
+                    {p.timeNome}
+                  </Link>
+                </div>
                 <Button
                   size="sm"
                   variant="danger"

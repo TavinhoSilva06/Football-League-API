@@ -68,6 +68,16 @@ Sempre `@Enumerated(EnumType.STRING)` — **nunca** `ORDINAL`:
 - `Papel` (Nível 4): ADMIN, USUARIO
 - `TipoFavorito` (Nível 4): CAMPEONATO, TIME, JOGADOR
 
+### Autenticação, Perfis e Palpites (implementado)
+
+- `Role`: `USER`, `ADMIN`. Cadastro público cria `USER`; seed cria o primeiro `ADMIN` via `app.admin.*`.
+- JWT com `jjwt 0.12.6`; filtro `JwtAuthenticationFilter` e `SecurityConfig` liberam `GET` e exigem `ADMIN` para escrita de domínio.
+- `Patente`: Bronze (0), Prata (1.000), Ouro (2.000), Platina (3.000), Diamante (4.000), Perito (5.000+).
+- Cada patente reduz 2 pontos por acerto em relação à anterior: 20/18/16/14/12/10.
+- `Palpite` é único por `(usuario, partida)`; a rodada atual é a menor com partida `AGENDADA`.
+- `SimulacaoService.simularRodada` finaliza a rodada e chama `PalpiteService.avaliarRodada`.
+- A premiação é idempotente (`pontosGanhos != null`) e usa snapshot da patente no início da avaliação.
+
 ### Classificação (Standings) — Decisão Crítica
 
 **Calculada on-the-fly, sem tabela persistida**:

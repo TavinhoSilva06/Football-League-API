@@ -18,4 +18,6 @@ public class ParticipacaoResponseDto {
     private Long timeId;
 
     private String timeNome;
+
+    private String timeEscudoUrl;
 }

@@ -1,5 +1,6 @@
 package com.example.Football_League_API.controller;
 
+import com.example.Football_League_API.dto.response.SimulacaoRodadaResponseDto;
 import com.example.Football_League_API.service.SimulacaoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +24,8 @@ public class SimulacaoController {
     }
 
     @PostMapping("/rodadas/{rodada}/simular")
-    public ResponseEntity<Map<String, Integer>> simularRodada(@PathVariable Long temporadaId,
-                                                              @PathVariable Integer rodada) {
-        return ResponseEntity.ok(Map.of("partidasSimuladas", service.simularRodada(temporadaId, rodada)));
+    public ResponseEntity<SimulacaoRodadaResponseDto> simularRodada(@PathVariable Long temporadaId,
+                                                                    @PathVariable Integer rodada) {
+        return ResponseEntity.ok(service.simularRodada(temporadaId, rodada));
     }
 }

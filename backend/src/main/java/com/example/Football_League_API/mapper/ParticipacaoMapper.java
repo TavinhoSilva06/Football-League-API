@@ -23,6 +23,7 @@ public class ParticipacaoMapper {
                 .temporadaId(entity.getTemporada().getId()) // Referência à temporada
                 .timeId(entity.getTime().getId()) // Referência ao time
                 .timeNome(entity.getTime().getNome()) // Denormalizado para facilitar leitura
+                .timeEscudoUrl(entity.getTime().getEscudoUrl())
                 .build();
     }
 }

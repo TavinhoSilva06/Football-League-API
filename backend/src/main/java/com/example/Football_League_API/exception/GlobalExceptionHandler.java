@@ -1,6 +1,7 @@
 package com.example.Football_League_API.exception;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -55,6 +56,16 @@ public class GlobalExceptionHandler {
         body.put("errors", errors); // Lista quais campos falharam na validação
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Map<String, Object>> handleBadCredentials(BadCredentialsException ex, WebRequest request) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.UNAUTHORIZED.value());
+        body.put("message", "E-mail ou senha inválidos");
+        body.put("path", request.getDescription(false).replace("uri=", ""));
+        return new ResponseEntity<>(body, HttpStatus.UNAUTHORIZED);
     }
 
     /**

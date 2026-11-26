@@ -73,6 +73,7 @@ Suporte a múltiplos formatos de competição (pontos corridos, mata-mata, grupo
 | RF013 | Busca Avançada | Filtrar por país, tipo de campeonato, status, período | Média |
 | RF014 | Gerar Relatórios | Exportar dados de classificação, artilharia e estatísticas | Média |
 | RF015 | Auditoria de Mudanças | Registrar quem criou/modificou/deletou cada registro com timestamp | Média |
+| RF016 | Palpites e Patentes | Palpitar placares, simular rodadas, ganhar pontos e evoluir de patente | Alta |
 
 
 ## 3. MATRIZ DE REQUISITOS NÃO-FUNCIONAIS
@@ -105,8 +106,9 @@ Suporte a múltiplos formatos de competição (pontos corridos, mata-mata, grupo
 | Partida | id | temporada_id (FK), rodada, data_hora, time_mandante_id (FK), time_visitante_id (FK), gols_mandante, gols_visitante, status (ENUM), local |
 | Jogador | id | time_id (FK), nome, nacionalidade, posição (ENUM), número_camisa, data_nascimento, criado_em |
 | EstatísticaJogador | id | jogador_id (FK), temporada_id (FK), jogos, gols, assistências, cartões_amarelos, cartões_vermelhos |
-| Usuário | id | nome, email (UNIQUE), senha_hash, papel (ENUM), criado_em, atualizado_em |
+| Usuário | id | nome, email (UNIQUE), senha_hash, papel (ENUM), pontos, patente (ENUM derivada), criado_em, atualizado_em |
 | Favorito | id | usuário_id (FK), tipo (ENUM), campeonato_id (FK), time_id (FK), jogador_id (FK), criado_em |
+| Palpite | id | usuário_id (FK), partida_id (FK), gols_mandante, gols_visitante, pontos_ganhos, acerto, criado_em |
 
 ### 4.2 Relacionamentos Principais
 1:N - Um Campeonato possui muitas Temporadas

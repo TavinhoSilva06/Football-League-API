@@ -1,5 +1,6 @@
 package com.example.Football_League_API.service;
 
+import com.example.Football_League_API.dto.response.SimulacaoRodadaResponseDto;
 import com.example.Football_League_API.entity.EstatisticaJogador;
 import com.example.Football_League_API.entity.EventoPartida;
 import com.example.Football_League_API.entity.Jogador;
@@ -28,9 +29,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -59,11 +61,14 @@ public class SimulacaoService {
     private final PartidaRepository partidaRepository;
     private final EventoPartidaRepository eventoRepository;
     private final EstatisticaJogadorRepository estatisticaRepository;
+    private final PalpiteService palpiteService;
 
     private final Random random = new Random();
 
     // Par de times de uma rodada do primeiro turno (mandante x visitante)
     private record Confronto(int rodada, Time mandante, Time visitante) {}
+
+    private record EstatisticaKey(Long jogadorId, Long temporadaId) {}
 
     /**
      * Inscreve os times com jogadores na temporada e cria as partidas de turno e returno,
@@ -112,7 +117,7 @@ public class SimulacaoService {
      * Simula todas as partidas agendadas de uma rodada: placar, eventos e estatísticas.
      */
     @Transactional
-    public int simularRodada(Long temporadaId, Integer rodada) {
+    public SimulacaoRodadaResponseDto simularRodada(Long temporadaId, Integer rodada) {
         Temporada temporada = buscarTemporada(temporadaId);
 
         List<Partida> partidas = partidaRepository.findByTemporadaIdAndRodadaAndStatus(
@@ -122,12 +127,21 @@ public class SimulacaoService {
             throw new IllegalArgumentException("Nenhuma partida agendada na rodada " + rodada);
         }
 
+        Map<EstatisticaKey, EstatisticaJogador> estatisticas = new HashMap<>();
+        List<EventoPartida> eventos = new ArrayList<>();
         for (Partida partida : partidas) {
-            simularPartida(partida, temporada);
+            simularPartida(partida, temporada, estatisticas, eventos);
         }
 
         partidaRepository.saveAll(partidas);
-        return partidas.size();
+        eventoRepository.saveAll(eventos);
+        estatisticaRepository.saveAll(estatisticas.values());
+        PalpiteService.AvaliacaoRodada avaliacao = palpiteService.avaliarRodada(temporadaId, rodada);
+        return SimulacaoRodadaResponseDto.builder()
+                .partidasSimuladas(partidas.size())
+                .palpitesAvaliados(avaliacao.palpitesAvaliados())
+                .pontosDistribuidos(avaliacao.pontosDistribuidos())
+                .build();
     }
 
     private Temporada buscarTemporada(Long temporadaId) {
@@ -175,19 +189,21 @@ public class SimulacaoService {
         return inicio.plusDays((long) (rodada - 1) * intervaloDias).atTime(HORA_PARTIDA, 0);
     }
 
-    private void simularPartida(Partida partida, Temporada temporada) {
+    private void simularPartida(Partida partida, Temporada temporada,
+                                Map<EstatisticaKey, EstatisticaJogador> estatisticas,
+                                List<EventoPartida> eventos) {
         List<Jogador> titularesMandante = escalar(partida.getTimeMandante());
         List<Jogador> titularesVisitante = escalar(partida.getTimeVisitante());
 
-        registrarJogos(titularesMandante, temporada);
-        registrarJogos(titularesVisitante, temporada);
+        registrarJogos(titularesMandante, temporada, estatisticas);
+        registrarJogos(titularesVisitante, temporada, estatisticas);
 
-        partida.setGolsMandante(simularGols(partida, temporada, titularesMandante));
-        partida.setGolsVisitante(simularGols(partida, temporada, titularesVisitante));
+        partida.setGolsMandante(simularGols(partida, temporada, titularesMandante, estatisticas, eventos));
+        partida.setGolsVisitante(simularGols(partida, temporada, titularesVisitante, estatisticas, eventos));
         partida.setStatus(StatusPartida.FINALIZADA);
 
-        simularCartoes(partida, temporada, titularesMandante);
-        simularCartoes(partida, temporada, titularesVisitante);
+        simularCartoes(partida, temporada, titularesMandante, estatisticas, eventos);
+        simularCartoes(partida, temporada, titularesVisitante, estatisticas, eventos);
     }
 
     // Goleiro é sempre titular; os demais são sorteados do elenco
@@ -219,20 +235,22 @@ public class SimulacaoService {
     }
 
     // Retorna a quantidade de gols do time e registra cada gol com autor e, às vezes, assistente
-    private int simularGols(Partida partida, Temporada temporada, List<Jogador> titulares) {
+    private int simularGols(Partida partida, Temporada temporada, List<Jogador> titulares,
+                            Map<EstatisticaKey, EstatisticaJogador> estatisticas,
+                            List<EventoPartida> eventos) {
         int gols = sortearGols();
 
         for (int i = 0; i < gols; i++) {
             Jogador autor = sortearPonderado(titulares, null);
             int minuto = sortearMinuto();
-            registrarEvento(partida, temporada, autor, TipoEvento.GOLO, minuto);
-            atualizarEstatistica(autor, temporada, est -> est.setGols(est.getGols() + 1));
+            registrarEvento(partida, temporada, autor, TipoEvento.GOLO, minuto, eventos);
+            atualizarEstatistica(autor, temporada, est -> est.setGols(est.getGols() + 1), estatisticas);
 
             if (random.nextDouble() < CHANCE_ASSISTENCIA) {
                 Jogador assistente = sortearPonderado(titulares, autor);
                 if (assistente != null) {
-                    registrarEvento(partida, temporada, assistente, TipoEvento.ASSISTENCIA, minuto);
-                    atualizarEstatistica(assistente, temporada, est -> est.setAssistencias(est.getAssistencias() + 1));
+                    registrarEvento(partida, temporada, assistente, TipoEvento.ASSISTENCIA, minuto, eventos);
+                    atualizarEstatistica(assistente, temporada, est -> est.setAssistencias(est.getAssistencias() + 1), estatisticas);
                 }
             }
         }
@@ -240,18 +258,20 @@ public class SimulacaoService {
         return gols;
     }
 
-    private void simularCartoes(Partida partida, Temporada temporada, List<Jogador> titulares) {
+    private void simularCartoes(Partida partida, Temporada temporada, List<Jogador> titulares,
+                                Map<EstatisticaKey, EstatisticaJogador> estatisticas,
+                                List<EventoPartida> eventos) {
         int amarelos = random.nextInt(MAX_AMARELOS_POR_TIME + 1);
         for (int i = 0; i < amarelos; i++) {
             Jogador jogador = titulares.get(random.nextInt(titulares.size()));
-            registrarEvento(partida, temporada, jogador, TipoEvento.CARTAO_AMARELO, sortearMinuto());
-            atualizarEstatistica(jogador, temporada, est -> est.setCartoesAmarelos(est.getCartoesAmarelos() + 1));
+            registrarEvento(partida, temporada, jogador, TipoEvento.CARTAO_AMARELO, sortearMinuto(), eventos);
+            atualizarEstatistica(jogador, temporada, est -> est.setCartoesAmarelos(est.getCartoesAmarelos() + 1), estatisticas);
         }
 
         if (random.nextDouble() < CHANCE_VERMELHO_POR_TIME) {
             Jogador jogador = titulares.get(random.nextInt(titulares.size()));
-            registrarEvento(partida, temporada, jogador, TipoEvento.CARTAO_VERMELHO, sortearMinuto());
-            atualizarEstatistica(jogador, temporada, est -> est.setCartoesVermelhos(est.getCartoesVermelhos() + 1));
+            registrarEvento(partida, temporada, jogador, TipoEvento.CARTAO_VERMELHO, sortearMinuto(), eventos);
+            atualizarEstatistica(jogador, temporada, est -> est.setCartoesVermelhos(est.getCartoesVermelhos() + 1), estatisticas);
         }
     }
 
@@ -306,14 +326,16 @@ public class SimulacaoService {
         };
     }
 
-    private void registrarJogos(List<Jogador> titulares, Temporada temporada) {
+    private void registrarJogos(List<Jogador> titulares, Temporada temporada,
+                                Map<EstatisticaKey, EstatisticaJogador> estatisticas) {
         for (Jogador jogador : titulares) {
-            atualizarEstatistica(jogador, temporada, est -> est.setJogos(est.getJogos() + 1));
+            atualizarEstatistica(jogador, temporada, est -> est.setJogos(est.getJogos() + 1), estatisticas);
         }
     }
 
-    private void registrarEvento(Partida partida, Temporada temporada, Jogador jogador, TipoEvento tipo, int minuto) {
-        eventoRepository.save(EventoPartida.builder()
+    private void registrarEvento(Partida partida, Temporada temporada, Jogador jogador, TipoEvento tipo,
+                                 int minuto, List<EventoPartida> eventos) {
+        eventos.add(EventoPartida.builder()
                 .partida(partida)
                 .temporada(temporada)
                 .jogador(jogador)
@@ -322,18 +344,18 @@ public class SimulacaoService {
                 .build());
     }
 
-    private void atualizarEstatistica(Jogador jogador, Temporada temporada, Consumer<EstatisticaJogador> ajuste) {
-        Optional<EstatisticaJogador> existente = estatisticaRepository.findByJogadorIdAndTemporadaId(jogador.getId(), temporada.getId());
-
-        // Construtor sem argumentos mantém os contadores em zero, pois o @Builder ignoraria esses valores iniciais
-        EstatisticaJogador estatistica = existente.orElseGet(() -> {
-            EstatisticaJogador nova = new EstatisticaJogador();
-            nova.setJogador(jogador);
-            nova.setTemporada(temporada);
-            return nova;
-        });
+    private void atualizarEstatistica(Jogador jogador, Temporada temporada, Consumer<EstatisticaJogador> ajuste,
+                                      Map<EstatisticaKey, EstatisticaJogador> estatisticas) {
+        EstatisticaKey chave = new EstatisticaKey(jogador.getId(), temporada.getId());
+        EstatisticaJogador estatistica = estatisticas.computeIfAbsent(chave, ignorado ->
+                estatisticaRepository.findByJogadorIdAndTemporadaId(jogador.getId(), temporada.getId())
+                        .orElseGet(() -> {
+                            EstatisticaJogador nova = new EstatisticaJogador();
+                            nova.setJogador(jogador);
+                            nova.setTemporada(temporada);
+                            return nova;
+                        }));
 
         ajuste.accept(estatistica);
-        estatisticaRepository.save(estatistica);
     }
 }

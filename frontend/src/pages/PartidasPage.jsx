@@ -5,12 +5,17 @@ import { PartidaItem } from '../components/PartidaItem'
 import { useGet, refreshPartidas } from '../api/hooks'
 import { api } from '../api/client'
 import { statusPartidaOptions } from '../lib/enums'
+import { useAuth } from '../AuthContext'
 
 export function PartidasPage({ temporadaId }) {
   const qc = useQueryClient()
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'ADMIN'
   const query = useGet(['partidas-temp', temporadaId], `/temporadas/${temporadaId}/partidas`)
   const tempQuery = useGet(['temporada', temporadaId], `/temporadas/${temporadaId}`)
   const participacoesQuery = useGet(['participacoes', temporadaId], `/temporadas/${temporadaId}/participacoes`)
+  const timesQuery = useGet(['times'], '/times')
+  const escudosPorTime = Object.fromEntries((timesQuery.data ?? []).map((time) => [time.id, time.escudoUrl]))
 
   const [rodadaFilter, setRodadaFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -48,7 +53,7 @@ export function PartidasPage({ temporadaId }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" onClick={() => setShowCreate(true)}>Nova Partida</Button>
+        {isAdmin && <Button size="sm" onClick={() => setShowCreate(true)}>Nova Partida</Button>}
         <input
           type="number"
           min="1"
@@ -93,9 +98,11 @@ export function PartidasPage({ temporadaId }) {
                       <PartidaItem
                         key={p.id}
                         partida={p}
-                        onResultado={() => setShowResultado(p)}
-                        onEdit={() => setShowEdit(p)}
-                        onDelete={() => setShowDelete(p)}
+                        escudoMandante={escudosPorTime[p.timeMandanteId]}
+                        escudoVisitante={escudosPorTime[p.timeVisitanteId]}
+                        onResultado={isAdmin ? () => setShowResultado(p) : undefined}
+                        onEdit={isAdmin ? () => setShowEdit(p) : undefined}
+                        onDelete={isAdmin ? () => setShowDelete(p) : undefined}
                       />
                     ))}
                   </div>

@@ -80,6 +80,7 @@ public class ClassificacaoService {
                             ClassificacaoEntradaDto.builder()
                                     .timeId(participacao.getTime().getId())
                                     .timeNome(participacao.getTime().getNome())
+                                    .timeEscudoUrl(participacao.getTime().getEscudoUrl())
                                     .jogos(0)
                                     .vitorias(0)
                                     .empates(0)

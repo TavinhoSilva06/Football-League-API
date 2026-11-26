@@ -5,10 +5,13 @@ import { PageHeader, Async, Button, Card, Badge, ConfirmDialog, FormModal } from
 import { useGet } from '../api/hooks'
 import { api } from '../api/client'
 import { TIPO_CAMPEONATO, FORMATO_CAMPEONATO, tipoOptions, formatoOptions } from '../lib/enums'
+import { useAuth } from '../AuthContext'
 
 export function CampeonatoDetalhe() {
   const { id } = useParams()
   const qc = useQueryClient()
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'ADMIN'
   const query = useGet(['campeonato', id], `/campeonatos/${id}`)
   const timesQuery = useGet(['campeonato-times', id], `/campeonatos/${id}/times`)
 
@@ -34,10 +37,10 @@ export function CampeonatoDetalhe() {
             <PageHeader
               title={camp.nome}
               subtitle={camp.pais}
-              actions={[
+              actions={isAdmin ? [
                 <Button key="edit" size="sm" onClick={() => setShowEdit(true)}>Editar</Button>,
                 <Button key="del" size="sm" variant="danger" onClick={() => setShowDelete(true)}>Excluir</Button>,
-              ]}
+              ] : []}
             />
             <div className="mb-6 flex gap-2">
               {camp.tipo && <Badge color="slate">{TIPO_CAMPEONATO[camp.tipo]}</Badge>}

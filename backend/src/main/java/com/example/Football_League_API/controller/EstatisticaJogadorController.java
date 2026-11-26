@@ -48,6 +48,13 @@ public class EstatisticaJogadorController {
         return ResponseEntity.ok(service.getAssistencias(temporadaId, limit));
     }
 
+    @GetMapping("/temporadas/{temporadaId}/cartoes")
+    public ResponseEntity<List<EstatisticaJogadorResponseDto>> getCartoes(
+            @PathVariable Long temporadaId,
+            @RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(service.getCartoes(temporadaId, limit));
+    }
+
     @GetMapping("/temporadas/{temporadaId}")
     public ResponseEntity<List<EstatisticaJogadorResponseDto>> getByTemporada(
             @PathVariable Long temporadaId) {

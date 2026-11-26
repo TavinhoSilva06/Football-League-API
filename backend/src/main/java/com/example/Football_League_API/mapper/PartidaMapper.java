@@ -26,8 +26,10 @@ public class PartidaMapper {
                 .dataHora(partida.getDataHora())
                 .timeMandanteId(partida.getTimeMandante().getId())
                 .timeMandanteNome(partida.getTimeMandante().getNome()) // Denormalizado
+                .timeMandanteEscudoUrl(partida.getTimeMandante().getEscudoUrl())
                 .timeVisitanteId(partida.getTimeVisitante().getId())
                 .timeVisitanteNome(partida.getTimeVisitante().getNome()) // Denormalizado
+                .timeVisitanteEscudoUrl(partida.getTimeVisitante().getEscudoUrl())
                 .golsMandante(partida.getGolsMandante())
                 .golsVisitante(partida.getGolsVisitante())
                 .status(partida.getStatus()) // Enum: AGENDADA, EM_ANDAMENTO, FINALIZADA, etc

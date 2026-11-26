@@ -5,9 +5,12 @@ import { PageHeader, Card, Button, Async, Badge, FormModal, ConfirmDialog } from
 import { useGet } from '../api/hooks'
 import { api } from '../api/client'
 import { TIPO_CAMPEONATO, FORMATO_CAMPEONATO, tipoOptions, formatoOptions } from '../lib/enums'
+import { useAuth } from '../AuthContext'
 
 export function CampeonatosPage() {
   const qc = useQueryClient()
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'ADMIN'
   const query = useGet(['campeonatos'], '/campeonatos')
   const [showForm, setShowForm] = useState(false)
   const [showDelete, setShowDelete] = useState(null)
@@ -38,7 +41,7 @@ export function CampeonatosPage() {
       <PageHeader
         title="Campeonatos"
         subtitle="Gerencie as competições"
-        actions={[<Button key="new" onClick={() => { setEditing(null); setShowForm(true) }}>Novo Campeonato</Button>]}
+        actions={isAdmin ? [<Button key="new" onClick={() => { setEditing(null); setShowForm(true) }}>Novo Campeonato</Button>] : []}
       />
       <Async query={query} empty="Nenhum campeonato criado ainda.">
         {(data) => (
@@ -54,10 +57,12 @@ export function CampeonatosPage() {
                       {c.formato && <Badge color="slate">{FORMATO_CAMPEONATO[c.formato]}</Badge>}
                     </div>
                     {c.descricao && <p className="text-xs text-slate-500">{c.descricao}</p>}
-                    <div className="flex gap-2 pt-2">
-                      <Button size="sm" variant="secondary" onClick={(e) => { e.preventDefault(); setEditing(c); setShowForm(true) }}>Editar</Button>
-                      <Button size="sm" variant="danger" onClick={(e) => { e.preventDefault(); setShowDelete(c) }}>Excluir</Button>
-                    </div>
+                    {isAdmin && (
+                      <div className="flex gap-2 pt-2">
+                        <Button size="sm" variant="secondary" onClick={(e) => { e.preventDefault(); setEditing(c); setShowForm(true) }}>Editar</Button>
+                        <Button size="sm" variant="danger" onClick={(e) => { e.preventDefault(); setShowDelete(c) }}>Excluir</Button>
+                      </div>
+                    )}
                   </div>
                 </Card>
               </Link>

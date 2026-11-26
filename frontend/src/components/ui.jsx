@@ -41,6 +41,9 @@ const badgeColors = {
   red: 'bg-red-100 text-red-800',
   green: 'bg-emerald-100 text-emerald-800',
   amber: 'bg-amber-100 text-amber-800',
+  yellow: 'bg-yellow-100 text-yellow-800',
+  blue: 'bg-blue-100 text-blue-800',
+  purple: 'bg-purple-100 text-purple-800',
   slate: 'bg-slate-100 text-slate-700',
   orange: 'bg-orange-100 text-orange-800',
 }
@@ -274,7 +277,7 @@ export function Escudo({ time, size = 'md' }) {
   if (time.escudoUrl && !failed) {
     return <img src={time.escudoUrl} alt={time.nome} onError={() => setFailed(true)} className={`${dim} object-contain`} />
   }
-  const initials = (time.sigla || time.nome).slice(0, 3).toUpperCase()
+  const initials = ((time?.sigla || time?.nome || '?')).slice(0, 3).toUpperCase()
   return (
     <div className={`${dim} flex items-center justify-center rounded-full bg-red-700 font-bold text-white`}>{initials}</div>
   )

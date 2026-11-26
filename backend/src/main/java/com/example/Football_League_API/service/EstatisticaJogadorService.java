@@ -10,14 +10,17 @@ import com.example.Football_League_API.mapper.EstatisticaJogadorMapper;
 import com.example.Football_League_API.repository.EstatisticaJogadorRepository;
 import com.example.Football_League_API.repository.JogadorRepository;
 import com.example.Football_League_API.repository.TemporadaRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class EstatisticaJogadorService {
+
+    private static final int MAX_LIMITE = 100;
 
     private final EstatisticaJogadorRepository estatisticaRepository;
     private final JogadorRepository jogadorRepository;
@@ -63,34 +66,34 @@ public class EstatisticaJogadorService {
     }
 
     public List<EstatisticaJogadorResponseDto> getArtilharia(Long temporadaId, int limit) {
-        Temporada temporada = temporadaRepository.findById(temporadaId)
-                .orElseThrow(() -> new EntityNotFoundException("Temporada não encontrada com ID: " + temporadaId));
-
-        return estatisticaRepository.findByTemporadaIdOrderByGolsDesc(temporadaId)
+        return estatisticaRepository.findArtilharia(temporadaId, pagina(limit))
                 .stream()
-                .limit(limit)
                 .map(mapper::toResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<EstatisticaJogadorResponseDto> getAssistencias(Long temporadaId, int limit) {
-        Temporada temporada = temporadaRepository.findById(temporadaId)
-                .orElseThrow(() -> new EntityNotFoundException("Temporada não encontrada com ID: " + temporadaId));
-
-        return estatisticaRepository.findByTemporadaIdOrderByAssistenciasDesc(temporadaId)
+        return estatisticaRepository.findAssistencias(temporadaId, pagina(limit))
                 .stream()
-                .limit(limit)
                 .map(mapper::toResponseDto)
-                .collect(Collectors.toList());
+                .toList();
+    }
+
+    public List<EstatisticaJogadorResponseDto> getCartoes(Long temporadaId, int limit) {
+        return estatisticaRepository.findCartoes(temporadaId, pagina(limit))
+                .stream()
+                .map(mapper::toResponseDto)
+                .toList();
     }
 
     public List<EstatisticaJogadorResponseDto> getByTemporada(Long temporadaId) {
-        Temporada temporada = temporadaRepository.findById(temporadaId)
-                .orElseThrow(() -> new EntityNotFoundException("Temporada não encontrada com ID: " + temporadaId));
-
         return estatisticaRepository.findByTemporadaIdOrderByGolsDesc(temporadaId)
                 .stream()
                 .map(mapper::toResponseDto)
-                .collect(Collectors.toList());
+                .toList();
+    }
+
+    private Pageable pagina(int limit) {
+        return PageRequest.of(0, Math.min(Math.max(limit, 1), MAX_LIMITE));
     }
 }
